@@ -25,11 +25,16 @@ dependencies = [
 [project.optional-dependencies]
 # SQL Server (Windows / Linux x86-64). Nécessite msodbcsql18.
 sqlserver = ["pyodbc>=5.1"]
-# Azure : OpenAI, AI Search, identité managée
+# Variante LangChain de la chaîne RAG (LCEL) — cœur LangChain, léger
+langchain = [
+  "langchain-core>=0.3",
+]
+# Azure : OpenAI, AI Search, identité managée, modèle LangChain Azure
 azure = [
   "openai>=1.40",
   "azure-search-documents>=11.5.0",
   "azure-identity>=1.17",
+  "langchain-openai>=0.2",
 ]
 dev = [
   "pytest>=8.2",

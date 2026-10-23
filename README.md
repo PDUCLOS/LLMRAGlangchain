@@ -22,7 +22,7 @@ en lecture seule sur le référentiel de gestion, agents d'automatisation
 | RAG | Ingestion → découpage structurel → embeddings → index hybride → recherche BM25+vecteurs → réponse ancrée avec citations |
 | Bases de données vectorielles | Azure AI Search en cible, index local déterministe en dev, derrière une interface unique |
 | Azure AI / Azure OpenAI | Bascule par variable d'environnement : modèle, embeddings, registre de prompts, agents |
-| LangChain | Non imposé : le pipeline est écrit explicitement (chaîne RAG lisible, pas de boîte noire) |
+| LangChain | Variante LCEL de la chaîne RAG (`RAG_CHAIN=langchain`), même format de sources et mêmes citations que la chaîne native |
 | Power Automate / Power BI / M365 | Points d'intégration documentés (`flows/`, `powerbi/`) + API prête à être appelée par un flux |
 | Accompagnement client | Traçabilité des prompts, journal d'ingestion, mesure de coût par client, documentation |
 
@@ -96,7 +96,26 @@ proposition, en Bicep (`infra/`).
 
 ---
 
-## 5. Structure du dépôt
+## 5. Deux chaînes RAG, une seule logique
+
+| Mode | Activation | Ce que c'est |
+|---|---|---|
+| **native** (défaut) | `RAG_CHAIN=native` | La chaîne écrite explicitement : retrieval → prompt → LLM → citations. Lisible, sans dépendance, c'est celle que la CI exerce. |
+| **langchain** | `RAG_CHAIN=langchain` | La même chose en **LCEL** : `retriever \| context \| prompt \| modèle \| extract`. Le retriever, le format des sources et les citations sont **strictement les mêmes** — seul le chaînage change. |
+
+```bash
+pip install -e ".[langchain]"
+RAG_CHAIN=langchain python -m erp_ai.cli ask "Quels sont les délais de paiement ?"
+```
+
+En mode Azure, la variante LangChain utilise `AzureChatOpenAI`
+(`langchain-openai`). Si la chaîne LangChain échoue, le service **retombe
+automatiquement sur la chaîne native** : une panne de la bibliothèque ne
+coupe jamais le service.
+
+---
+
+## 6. Structure du dépôt
 
 ```
 erp-ai-copilot/
@@ -123,7 +142,7 @@ erp-ai-copilot/
 
 ---
 
-## 6. Garde-fous (le vrai sujet d'un déploiement ERP)
+## 7. Garde-fous (le vrai sujet d'un déploiement ERP)
 
 1. **Lecture seule par construction** — le compte SQL applicatif utilisé par
    le Text-to-SQL n'a que des droits `SELECT` ; en plus, chaque requête est
@@ -140,7 +159,7 @@ erp-ai-copilot/
 
 ---
 
-## 7. Tests et CI
+## 8. Tests et CI
 
 ```bash
 make test          # tests hors SQL Server (SQLite, < 30 s)
@@ -154,7 +173,7 @@ exécution : une régression de pertinence ou de réponse fait échouer le build
 
 ---
 
-## 8. Transfert vers une autre machine
+## 9. Transfert vers une autre machine
 
 ```bash
 make export        # -> dist/erp-ai-copilot-<date>.tar.gz (sans .venv, sans data)

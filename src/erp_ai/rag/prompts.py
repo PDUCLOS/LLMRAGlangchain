@@ -54,8 +54,13 @@ Réponds uniquement avec la requête SQL, sans commentaire ni balise markdown.
 """
 
 
-def build_user_prompt(sources: Sequence[dict], question: str) -> str:
-    """Assemble le prompt utilisateur : bloc de sources + question."""
+def format_source_blocks(sources: Sequence[dict]) -> str:
+    """Sérialise les sources au format canonique `<<<SOURCE ...>>>`.
+
+    Format unique shared par la chaîne native et la variante LangChain :
+    le LLM local s'appuie dessus pour extraire les phrases, et le LLM Azure
+    s'appuie dessus pour citer.
+    """
     blocs = []
     for index, src in enumerate(sources, start=1):
         attrs = [
@@ -69,7 +74,12 @@ def build_user_prompt(sources: Sequence[dict], question: str) -> str:
         blocs.append(
             f"<<<SOURCE {' '.join(attrs)}>>>\n{src.get('texte', '').strip()}\n<<<END SOURCE>>>"
         )
-    corps = "\n\n".join(blocs) if blocs else "(aucune source disponible)"
+    return "\n\n".join(blocs)
+
+
+def build_user_prompt(sources: Sequence[dict], question: str) -> str:
+    """Assemble le prompt utilisateur : bloc de sources + question."""
+    corps = format_source_blocks(sources) if sources else "(aucune source disponible)"
     return f"[SOURCES]\n{corps}\n[/SOURCES]\n\n[QUESTION]\n{question.strip()}\n[/QUESTION]"
 
 

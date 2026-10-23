@@ -6,6 +6,7 @@ production) par les flux Power Automate et l'agent Copilot Studio.
 
 from __future__ import annotations
 
+import logging
 import time
 from datetime import datetime
 from typing import Any
@@ -22,8 +23,11 @@ from erp_ai.providers.embeddings import build_embedding_provider
 from erp_ai.providers.llm import build_llm
 from erp_ai.providers.vectorstore import build_vector_store
 from erp_ai.rag.chunking import estimate_tokens
-from erp_ai.rag.prompts import SYSTEM_PROMPT, build_user_prompt
+from erp_ai.rag.langchain_chain import LANGCHAIN_AVAILABLE, build_answer_chain
+from erp_ai.rag.prompts import SYSTEM_PROMPT, build_user_prompt, format_source_blocks
 from erp_ai.rag.retrieval import Retriever
+
+logger = logging.getLogger(__name__)
 
 ROLES = {"daf", "controleur", "commercial", "admin"}
 
@@ -46,6 +50,7 @@ class CopilotService:
         self.retriever = Retriever(self.engine, self.embeddings, self.vector_store, self.settings)
         self.tools = ErpTools(self.engine, self.settings)
         self.sql_agent = SqlAgent(self.engine, self.llm, self.settings)
+        self._lc_chain: Any | None = None
 
     # -- Santé -----------------------------------------------------------
     def health(self) -> dict[str, Any]:
@@ -148,8 +153,10 @@ class CopilotService:
         else:
             for index, source in enumerate(sources, start=1):
                 source["source_ref"] = source.get("source_ref") or f"S{index}"
-            prompt = build_user_prompt(sources, question)
-            answer = self.llm.complete(SYSTEM_PROMPT, prompt)
+            answer = self._answer_with_langchain(question, sources)
+            if answer is None:
+                prompt = build_user_prompt(sources, question)
+                answer = self.llm.complete(SYSTEM_PROMPT, prompt)
             statut = "OK"
 
         tokens_in = estimate_tokens(SYSTEM_PROMPT) + estimate_tokens(
@@ -219,6 +226,31 @@ class CopilotService:
             },
             "statut": statut,
         }
+
+    def _answer_with_langchain(self, question: str, sources: list[dict]) -> str | None:
+        """Génère la réponse via la chaîne LangChain (si activée).
+
+        Retourne `None` si la chaîne LangChain n'est pas activée, pas
+        installée ou en erreur : l'appelant bascule alors sur la chaîne
+        native, qui reste la référence.
+        """
+        if self.settings.rag_chain.lower() != "langchain" or not LANGCHAIN_AVAILABLE:
+            return None
+        try:
+            if self._lc_chain is None:
+                chat_model = None
+                if self.settings.llm_provider.lower() == "azure":
+                    from erp_ai.rag.langchain_chain import build_azure_chat_model
+
+                    chat_model = build_azure_chat_model(self.settings)
+                self._lc_chain = build_answer_chain(
+                    self.settings, llm=self.llm, chat_model=chat_model
+                )
+            context = format_source_blocks(sources)
+            return self._lc_chain.invoke({"context": context, "question": question})
+        except Exception as exc:  # pragma: no cover - dépend de l'installation
+            logger.warning("Chaîne LangChain indisponible, repli sur la chaîne native : %s", exc)
+            return None
 
     def run_sql(self, question: str) -> dict[str, Any]:
         """Exécute une requête SQL encadrée (démonstration Text-to-SQL)."""

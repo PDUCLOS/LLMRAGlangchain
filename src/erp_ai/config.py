@@ -38,6 +38,8 @@ class Settings(BaseSettings):
     llm_provider: str = "local"  # local | azure
     embedding_provider: str = "local"  # local | azure
     vector_store_provider: str = "local"  # local | azure_ai_search
+    # Chaîne de génération : native (écrite explicitement) ou langchain (LCEL)
+    rag_chain: str = "native"  # native | langchain
 
     # --- Azure AI Foundry / Azure OpenAI ---------------------------------
     azure_openai_endpoint: str = ""

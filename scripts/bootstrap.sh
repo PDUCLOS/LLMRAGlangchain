@@ -35,10 +35,10 @@ fi
 
 # --- 2. Dépendances --------------------------------------------------------
 if command -v uv >/dev/null 2>&1; then
-  uv pip install --python .venv/bin/python -e ".[dev]"
+  uv pip install --python .venv/bin/python -e ".[dev,langchain]"
 else
   .venv/bin/python -m pip install --upgrade pip
-  .venv/bin/python -m pip install -e ".[dev]"
+  .venv/bin/python -m pip install -e ".[dev,langchain]"
 fi
 
 # --- 3. Rendre le package importable --------------------------------------

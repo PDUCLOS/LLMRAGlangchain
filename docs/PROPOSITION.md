@@ -218,7 +218,7 @@ donc déjà démontrée, pas supposée.
 | Python | API, CLI, moteur RAG, outils, tests, CI | Fait |
 | Sage 100 / EBP | Contrat d'API REST + point de branchement isolé | Contractuel |
 | Azure AI / Azure OpenAI | Bascule par variable d'environnement, deployments Foundry | Prêt |
-| LangChain | Variante LangChain de la chaîne RAG | À faire (phase 4) |
+| LangChain | Variante LCEL de la chaîne RAG (`RAG_CHAIN=langchain`), même retriever, mêmes citations, repli automatique sur la chaîne native | Fait |
 | Architecture RAG | Pipeline complet documenté et testé | Fait |
 | Bases de données vectorielles | Azure AI Search (cible) + index local (dev) | Fait |
 | Métiers compta / gestion commerciale | Le cas d'usage est la gestion (relance, recouvrement, marge) | Fait |
