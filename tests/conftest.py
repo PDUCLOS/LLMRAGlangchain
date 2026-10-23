@@ -21,9 +21,14 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope="session")
 def settings(tmp_path_factory: pytest.TempPathFactory) -> Settings:
-    """Configuration de test : SQLite + providers locaux, données isolées."""
+    """Configuration de test : SQLite + providers locaux, données isolées.
+
+    Si `ERP_AI_TEST_DATABASE_URL` est défini (CI sur runner x86-64), les
+    tests s'exécutent sur un vrai SQL Server au lieu de SQLite.
+    """
     data_dir = tmp_path_factory.mktemp("erp_ai_data")
-    os.environ["DATABASE_URL"] = f"sqlite:///{data_dir / 'test.db'}"
+    db_url = os.environ.get("ERP_AI_TEST_DATABASE_URL") or f"sqlite:///{data_dir / 'test.db'}"
+    os.environ["DATABASE_URL"] = db_url
     os.environ["DATA_DIR"] = str(data_dir)
     os.environ["LLM_PROVIDER"] = "local"
     os.environ["EMBEDDING_PROVIDER"] = "local"
@@ -32,7 +37,7 @@ def settings(tmp_path_factory: pytest.TempPathFactory) -> Settings:
     reset_settings_cache()
 
     yield Settings(
-        database_url=f"sqlite:///{data_dir / 'test.db'}",
+        database_url=db_url,
         data_dir=str(data_dir),
         llm_provider="local",
         embedding_provider="local",

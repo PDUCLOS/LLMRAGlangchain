@@ -50,9 +50,20 @@ jobs:
       - name: Tests (hors SQL Server)
         run: pytest -q -m "not sqlserver and not azure" --cov=src/erp_ai --cov-report=term-missing
 
+      - name: Créer la base de test et appliquer le schéma T-SQL
+        run: |
+          set -e
+          SQLCMD=$(command -v sqlcmd || ls /opt/mssql-tools18/bin/sqlcmd 2>/dev/null || ls /opt/mssql-tools/bin/sqlcmd 2>/dev/null)
+          echo "sqlcmd : $SQLCMD"
+          "$SQLCMD" -S localhost -U sa -P 'Ci_Only_2026!' -C -Q "IF DB_ID('erp_ai_test') IS NULL CREATE DATABASE erp_ai_test"
+          # Applique le schéma T-SQL de production : c'est ce fichier qui doit
+          # tenir debout face au moteur cible, pas seulement le schéma Python.
+          "$SQLCMD" -S localhost -U sa -P 'Ci_Only_2026!' -C -d erp_ai_test -i sql/00_schema.sql
+          echo "Schéma T-SQL appliqué avec succès."
+
       - name: Tests sur SQL Server réel
         env:
-          DATABASE_URL: mssql+pyodbc://sa:Ci_Only_2026!@localhost:1433/erp_ai?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+          ERP_AI_TEST_DATABASE_URL: "mssql+pyodbc://sa:Ci_Only_2026!@localhost:1433/erp_ai_test?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
         run: pytest -q -m "sqlserver"
 
       - name: Évaluation RAG (gold set, mode offline déterministe)
