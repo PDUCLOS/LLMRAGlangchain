@@ -1,0 +1,450 @@
+<mxfile host="app.diagrams.net" modified="2026-10-23T11:30:00.000Z" agent="mavis/1.0" version="24.7.17" type="device">
+  <diagram id="page-arch" name="1. Architecture cible Azure">
+    <mxGraphModel dx="1920" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Consultant IA &amp; Automatisation ERP &#8212; Architecture cible Azure (multi-tenant SaaS, r&#233;f&#233;rence 'ERPF copilote')" style="text;html=1;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1400" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b1" value="1. SI client / Sources" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f7f7f7;strokeColor=#b3b3b3;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="230" height="600" as="geometry" />
+        </mxCell>
+        <mxCell id="b2" value="2. Ingestion &amp; Automatisation (Microsoft)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f2f9f2;strokeColor=#b3b3b3;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="290" y="60" width="250" height="600" as="geometry" />
+        </mxCell>
+        <mxCell id="b3" value="3. Données &amp; Azure AI" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fdf6f2;strokeColor=#b3b3b3;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="60" width="300" height="600" as="geometry" />
+        </mxCell>
+        <mxCell id="b4" value="4. Restitution &amp; Usages" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f2f6fc;strokeColor=#b3b3b3;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="880" y="60" width="250" height="600" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s1" value="Sage 100 / Sage X3&#10;API REST" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="EBP Gestion Commerciale&#10;API REST" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="180" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="Microsoft 365&#10;SharePoint / OneDrive" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="260" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="Pieces jointes&#10;PDF / XLSX / CSV" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="340" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="Demande m&#233;tier&#10;e-mail / ticket" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="420" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" value="Base ERP on&#8211;premise&#10;SQL Server (reporting)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="500" width="190" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="i1" value="Power Automate&#10;d&#233;clencheurs, approbations, relances" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="310" y="100" width="210" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="i2" value="Azure Functions (Python)&#10;connecteurs REST, ETL, webhooks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="310" y="180" width="210" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="i3" value="Azure Blob Storage&#10;zone bronze / silver" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="310" y="260" width="210" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="i4" value="Chunking structurel + m&#233;tadonn&#233;es&#10;(titres, tables, ACL, version, client_id)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="310" y="340" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="i5" value="Journal d&#8217;ingestion &amp; contr&#244;le qualit&#233;&#10;(tables SQL : doc, chunk, ingestion_log)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="310" y="430" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="i6" value="GitHub Actions&#10;tests, &#233;valuation RAG, d&#233;ploiement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="310" y="520" width="210" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d1" value="Azure AI Foundry&#10;catalogue, d&#233;ploiements, registre de prompts, &#233;valuation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="100" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="d2" value="Azure OpenAI&#10;gpt-4.1-mini (raisonnement) &#183; text-embedding-3-small (vecteurs)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="190" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="d3" value="Azure AI Search&#10;index vectoriel HNSW + recherche hybride + ranker s&#233;mantique" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="280" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="d4" value="SQL Server / Azure SQL&#10;r&#233;f&#233;rentiel ERP + vues analytiques + ai_usage_log (co&#251;ts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="370" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="d5" value="Agents &amp; outils (function calling)&#10;sql_query (lecture seule) &#183; erp_rest &#183; relance_impayes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="460" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="d6" value="Guardrails&#10;SQL en lecture seule &#183; sch&#233;ma autoris&#233; &#183; masquage PII &#183; refus si pas de source" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="550" width="260" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r1" value="API Python FastAPI (LangChain)&#10;Azure App Service &#8212; /chat /agents /health" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="100" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" value="Power BI&#10;mod&#232;le s&#233;mantique (TMDL), DirectQuery SQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="190" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" value="Teams / Outlook&#10;Copilot, validation humaine, notifications" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="280" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" value="Copilot Studio&#10;agent m&#233;tier connect&#233; &#2240; l&#8217;API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="370" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" value="Portail web (React / Web App)&#10;espace DAF &#183; espace contr&#244;leur de gestion" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="460" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="r6" value="Documentation produit&#10;guide, ADR, sch&#233;ma de d&#233;ploiement, formation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="550" width="210" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gb" value="Transverse &#8212; S&#233;curit&#233;, Gouvernance &amp; Exploitation" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="690" width="1090" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="g1" value="Entra ID&#10;OAuth2 / OIDC, RBAC par r&#244;le" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="730" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g2" value="Key Vault + Managed Identity&#10;secrets, rotation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="730" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g3" value="Private endpoints / VNet&#10;aucune sortie public des donn&#233;es" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="730" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g4" value="Application Insights + Log Analytics&#10;traces OpenTelemetry, latence, erreurs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="840" y="730" width="270" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g5" value="Co&#251;ts &amp; tokens par client (FinOps)&#10;ai_usage_log : mod&#232;le, tokens, EUR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="810" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g6" value="Journalisation des prompts&#10;tra&#231;abilit&#233;, non-r&#233;gression" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="810" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g7" value="RGPD &amp; AI Act&#10;h&#233;bergement UE, minimisation, dur&#233;e de conservation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="810" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="g8" value="&#201;valuation continue&#10;jeu de questions de r&#233;f&#233;rence, faithfulness, SQL correct" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="840" y="810" width="270" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="s1" target="i2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="s2" target="i2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="s3" target="i2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="s4" target="i2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="s5" target="i1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="s6" target="d4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="i1" target="i2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="i2" target="i3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="i3" target="i4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="i4" target="d3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="i4" target="d2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="i4" target="i5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="i2" target="d4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="d3" target="d5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="d4" target="d5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="d1" target="d5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="d6" target="d5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="d5" target="r1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="d5" target="s1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="d4" target="r2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="r1" target="r3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="r1" target="r4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="r1" target="r5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="i6" target="i2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;dashed=1;" edge="1" parent="1" source="r1" target="d4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#999999;dashed=1;" edge="1" parent="1" source="g1" target="r1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#999999;dashed=1;" edge="1" parent="1" source="g4" target="d5"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="page-rag" name="2. Pipeline RAG">
+    <mxGraphModel dx="1920" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="rt" value="Pipeline RAG &#8212;.Indexation (offline) et Interrogation (temps r&#233;el)" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1000" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lb" value="A. INDEXATION (batch / planifi&#233;e)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f2f9f2;strokeColor=#b3b3b3;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="380" height="700" as="geometry" />
+        </mxCell>
+        <mxCell id="rb" value="B. INTERROGATION (requ&#234;te utilisateur)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f2f6fc;strokeColor=#b3b3b3;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="60" width="380" height="700" as="geometry" />
+        </mxCell>
+        <mxCell id="cb" value="C. GARDE-FOUS &amp; MESURE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fdf6f2;strokeColor=#b3b3b3;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="880" y="60" width="380" height="700" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a1" value="1. Collecte&#10;REST ERP (Sage/EBP), SharePoint, fichiers, e&#8211;mails" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="2. Normalisation&#10;nettoyage, d&#233;duplication (hash), m&#233;tadonn&#233;es (client_id, type, version, date, ACL)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="180" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="3. Parsing&#10;PDF / DOCX / XLSX &#8594; texte + tableaux (Mariko / markitdown)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="270" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" value="4. Chunking&#10;par structure (titres) &#183; 800 tokens &#183; overlap 100 &#183; chunks li&#233;s" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="350" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" value="5. Embeddings&#10;text-embedding-3-small (batch) &#8594; vecteurs 1536 dim." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="440" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a6" value="6. Indexation&#10;Azure AI Search : champ vector HNSW + champs texte + semantic ranker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="520" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a7" value="7. Journalisation&#10;tables : document, chunk, ingestion_log (SQL Server)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="610" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a8" value="Jeux de test&#10;questions de r&#233;f&#233;rence + r&#233;ponses attendues (gold set)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="690" width="340" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b1" value="8. Requ&#234;te utilisateur&#10;Teams / Copilot / Portail web / Power Automate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="100" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b2" value="9. Reformulation&#10;requ&#234;te -&gt; sous-requ&#234;tes (d&#233;composition)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="180" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b3" value="10. R&#233;cup&#233;ration hybride&#10;vectoriel + full-text (BM25) + filtre ACL + top-k" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="260" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="b4" value="11. Reranking&#10;semantic ranker + score de pertinence + seuil" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="350" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b5" value="12. Outils / Text-to-SQL&#10;sql_query (lecture seule) &#183; erp_rest &#183; calcul de KPI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="430" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="b6" value="13. G&#233;n&#233;ration ancr&#233;e&#10;prompt grounding + citations [doc, p. n&#176;] + refus si sources insuffisantes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="520" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="b7" value="14. Restitution&#10;r&#233;ponse + sources + SQL ex&#233;cut&#233; + dur&#233;e + co&#251;t" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="610" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b8" value="15. Action&#10;relance, cr&#233;ation de brouillon ERP, export Power BI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="690" width="340" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c1" value="Tra&#231;abilit&#233;&#10;prompt, mod&#232;le, tokens, latence, co&#251;t EUR &#8594; ai_usage_log" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="100" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" value="S&#233;curit&#233;&#10;Entra ID + RBAC (DAF / contr&#244;leur / commercial)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="190" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" value="Confidentialit&#233;&#10;filtre par client_id + masquage PII avant envoi au mod&#232;le" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="270" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" value="Non-r&#233;gression&#10;gold set : faithfulness, pertinence, exactitude SQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="360" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" value="Mode local sans Azure&#10;provider mock + index BM25 local : la d&#233;mo tourne 100 % hors ligne" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="450" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" value="Boucle de retour&#10;retour terrain -&gt; jeu de test -&gt; correction prompt / chunking" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="540" width="340" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" value="Quotas &amp; budget&#10;plafond mensuel par client, alerte FinOps" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="630" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c8" value="Versioning&#10;prompt, sch&#233;ma, index : tout est versionn&#233; dans Git" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="710" width="340" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ea1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#82b366;" edge="1" parent="1" source="a1" target="a2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#82b366;" edge="1" parent="1" source="a2" target="a3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#82b366;" edge="1" parent="1" source="a3" target="a4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#82b366;" edge="1" parent="1" source="a4" target="a5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#82b366;" edge="1" parent="1" source="a5" target="a6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#82b366;" edge="1" parent="1" source="a6" target="a7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="b1" target="b2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="b2" target="b3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="b3" target="b4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="b4" target="b5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="b5" target="b6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="b6" target="b7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="b7" target="b8"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#b3b3b3;dashed=1;" edge="1" parent="1" source="a6" target="b3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#d79b00;" edge="1" parent="1" source="b5" target="c1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#d79b00;" edge="1" parent="1" source="b1" target="c2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#d79b00;" edge="1" parent="1" source="b4" target="c3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#d79b00;" edge="1" parent="1" source="a8" target="c4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#d79b00;" edge="1" parent="1" source="c4" target="c6"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="page-seq" name="3. Cas metier : relance impayes">
+    <mxGraphModel dx="1920" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="st" value="S&#233;quence cible &#8212; Cas m&#233;tier : d&#233;tection des factures impay&#233;es et relance client assist&#233;e par l'IA" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l1" value="Power Automate&#10;(planificateur)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="160" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="l2" value="API Python&#10;FastAPI (App Service)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="80" width="160" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="l3" value="SQL Server&#10;Azure SQL" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="80" width="160" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="l4" value="Agent IA&#10;Azure AI Foundry" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="80" width="160" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="l5" value="ERP&#10;API REST Sage / EBP" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="80" width="160" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="l6" value="DAF / Contr&#244;leur&#10;(validation humaine)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="960" y="80" width="180" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="l7" value="Teams / Outlook&#10;(notification)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="80" width="160" height="640" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m1" value="1. D&#233;clenchement planifi&#233; (quotidien 08:00)" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="240" y="150" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" value="2. POST /agents/relance-impayes" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="240" y="220" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" value="3. Lecture : proc&#233;dure stock&#233;e / vue vw_impayes" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="420" y="290" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="m4" value="4. Contexte client + historique + contrats" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="600" y="360" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="m5" value="5. tool : erp_rest (relance) / r&#233;daction du message" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="600" y="430" width="300" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="m6" value="6. Cr&#233;ation brouillon + rel&#232;ve des factures" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="780" y="500" width="280" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="m7" value="7. Demande d'approbation (montant, ton, client)" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="960" y="570" width="300" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="m8" value="8. Validation / correction humaine" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="960" y="620" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="m9" value="9. Envoi de la relance + journalisation" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="680" width="280" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="q1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#82b366;" edge="1" parent="1" source="l1" target="l2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="l2" target="l3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#d79b00;" edge="1" parent="1" source="l3" target="l4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="l4" target="l5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="l5" target="l6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="l6" target="l7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#d79b00;" edge="1" parent="1" source="l7" target="l3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="l7" target="l4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="l7" target="l5"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="n1" value="&#8212;&#8212;&#8212; Points de vigilance&#10;&#8226; l'IA propose, l'humain d&#233;cide (approbation obligatoire)&#10;&#8226; aucune &#233;criture ERP sans jeton d'approbation&#10;&#8226; SQL strictement en lecture seule (compte SQL applicatif)&#10;&#8226; chaque action est journalis&#233;e (qui, quoi, quand, combien)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="750" width="1260" height="130" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="page-dev" name="4. Dev local, CI/CD et deploiement">
+    <mxGraphModel dx="1920" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="dt" value="Environnement de d&#233;veloppement, CI/CD et d&#233;ploiement" style="text;html=1;fontSize=16;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="900" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dev" value="Poste de dev &#8212; Mac Apple Silicon (ARM64)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f2f9f2;strokeColor=#b3b3b3;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="400" height="430" as="geometry" />
+        </mxCell>
+        <mxCell id="ci" value="CI &#8212; GitHub Actions (runner x64)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f2f6fc;strokeColor=#b3b3b3;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="60" width="340" height="430" as="geometry" />
+        </mxCell>
+        <mxCell id="az" value="Azure (prod / d&#233;mo client)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fdf6f2;strokeColor=#b3b3b3;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="840" y="60" width="400" height="430" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dv1" value="Docker Desktop&#10;docker compose up" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dv2" value="SQL Server 2022&#10;conteneur linux/amd64 (&#233;mulation)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="250" y="100" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dv3" value="Index vectoriel local&#10;Qdrant (ARM64 natif) ou BM25" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="180" width="360" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dv4" value="Mode hors-ligne&#10;provider LLM/embedding d&#233;terministe (mock)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="260" width="360" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dv5" value="uv / poetry + venv + pytest&#10;ruff, mypy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="340" width="360" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dv6" value="Secrets : .env local (jamais versionn&#233;)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="420" width="360" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ci1" value="Lint + tests unitaires&#10;(aucun cloud requis)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="490" y="100" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ci2" value="Service container SQL Server&#10;(natif x64, aucun &#233;mulation)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="490" y="180" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ci3" value="&#201;valuation RAG sur gold set&#10;seuil bloquant (faithfulness &gt; 0.8)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="490" y="260" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ci4" value="Build image + scan vuln&#10;Trivy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="490" y="340" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ci5" value="D&#233;ploiement Bicep&#10;azd up / terraform apply" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="490" y="420" width="300" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="az1" value="Groupe de ressources par client&#10;(ou par environnement)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="860" y="100" width="360" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="az2" value="AI : Foundry + Azure OpenAI + AI Search" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="860" y="180" width="360" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="az3" value="Donn&#233;es : Azure SQL + Blob Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="860" y="260" width="360" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="az4" value="App : App Service (API) + Functions + Logic Apps" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="860" y="340" width="360" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="az5" value="S&#233;curit&#233; : Entra ID, Key Vault, private endpoints" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="860" y="420" width="360" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ed1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="dev" target="ci"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ed2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;" edge="1" parent="1" source="ci" target="az"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="rk" value="&#201;cueil ARM64 &#8212; r&#233;glle du jeu" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="530" width="1200" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="rk1" value="SQL Server ne fournit pas d'image ARM64 native.&#10;Sur Mac Apple Silicon, le conteneur tourne en &#233;mulation (QEMU / Rosetta),&#10;non support&#233; officiellement par Microsoft." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="570" width="360" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="rk2" value="Repli 1 &#8212; machine x64&#10;VM Linux x64 / runner GitHub Actions /&#10;cloud Linux : SQL Server natif, aucune &#233;mulation." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="440" y="570" width="360" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="rk3" value="Repli 2 &#8212; abstraction SQL&#10;Le code passe par SQLAlchemy : m&#234;me sch&#233;ma et m&#234;mes requ&#234;tes&#10;sur SQL Server (prod) ou SQLite (tests unitaires)." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="570" width="400" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="rk4" value="Repli 3 &#8212; base vectorielle locale&#10;Qdrant ou pgvector en conteneur ARM64 natif en dev ;&#10;Azure AI Search en prod, derri&#232;re la m&#234;me interface VectorStore." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="670" width="560" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rk5" value="Ce qui ne d&#233;pend pas de l'architecture :&#10;le code m&#233;tier, le sch&#233;ma, les prompts, les tests, la CI. Le pipeline reste&#10;d&#233;montrable sur Mac ; seule la bascule Azure demande une machine x64." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="640" y="670" width="580" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

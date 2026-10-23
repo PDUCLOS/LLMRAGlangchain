@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    # Runner x86-64 : SQL Server y est natif (indisponible sur ARM64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Ci_Only_2026!"
+          MSSQL_PID: "Developer"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd="/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Ci_Only_2026!' -C -Q 'SELECT 1'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+          --health-start-period=30s
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Installer les dépendances
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,sqlserver]"
+
+      - name: Lint
+        run: ruff check src tests
+
+      - name: Contrôle de types
+        run: mypy src || true
+
+      - name: Tests (hors SQL Server)
+        run: pytest -q -m "not sqlserver and not azure" --cov=src/erp_ai --cov-report=term-missing
+
+      - name: Tests sur SQL Server réel
+        env:
+          DATABASE_URL: mssql+pyodbc://sa:Ci_Only_2026!@localhost:1433/erp_ai?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+        run: pytest -q -m "sqlserver"
+
+      - name: Évaluation RAG (gold set, mode offline déterministe)
+        run: python -m erp_ai.cli eval

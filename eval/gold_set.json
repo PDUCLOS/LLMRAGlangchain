@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "description": "Gold set de non-régression : questions métier de démonstration sur le corpus documentaire et le référentiel ERP.",
+  "questions": [
+    {
+      "question": "Quels sont les délais de paiement applicables aux clients ?",
+      "documents_attendus": ["Procédure de relance client", "Contrat-cadre de fourniture 2026"],
+      "mots_cles": ["30"]
+    },
+    {
+      "question": "Comment se déroule l'escalade des relances client ?",
+      "documents_attendus": ["Procédure de relance client"],
+      "mots_cles": ["relance"]
+    },
+    {
+      "question": "Quelles sont les conditions pour obtenir une remise commerciale ?",
+      "documents_attendus": ["Politique commerciale et remises 2026"],
+      "mots_cles": ["remise"]
+    },
+    {
+      "question": "Quel est le barème des remises selon le chiffre d'affaires ?",
+      "documents_attendus": ["Politique commerciale et remises 2026"],
+      "mots_cles": ["remise"]
+    },
+    {
+      "question": "Quelles sont les étapes de la clôture mensuelle ?",
+      "documents_attendus": ["Guide de saisie et de clôture comptable"],
+      "mots_cles": ["clôture"]
+    },
+    {
+      "question": "Comment le stock est-il valorisé et contrôlé ?",
+      "documents_attendus": ["Guide de saisie et de clôture comptable"],
+      "mots_cles": ["stock"]
+    },
+    {
+      "question": "Quelles sont les clauses de récupération des paiements en retard ?",
+      "documents_attendus": ["Contrat-cadre de fourniture 2026", "Procédure de relance client"],
+      "mots_cles": ["jours"]
+    },
+    {
+      "question": "Quelle est la durée de conservation des données personnelles ?",
+      "documents_attendus": ["Contrat-cadre de fourniture 2026"],
+      "mots_cles": ["conserv"]
+    },
+    {
+      "question": "Quelles factures sont en retard de paiement au-delà de 60 jours ?",
+      "documents_attendus": ["Procédure de relance client"],
+      "mots_cles": []
+    },
+    {
+      "question": "Quel est le taux de recouvrement et le montant en souffrance ?",
+      "documents_attendus": ["Note interne — Recouvrement et litiges"],
+      "mots_cles": ["recouvrement"]
+    }
+  ]
+}

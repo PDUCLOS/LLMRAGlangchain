@@ -1,0 +1,230 @@
+"""Service applicatif : orchestre retrieval, outils SQL, LLM et observabilité.
+
+C'est le point d'entrée unique utilisé par l'API REST, la CLI et (en
+production) par les flux Power Automate et l'agent Copilot Studio.
+"""
+
+from __future__ import annotations
+
+import time
+from datetime import datetime
+from typing import Any
+
+import sqlalchemy as sa
+
+from erp_ai.agents.safe_sql import SqlGuardError
+from erp_ai.agents.tools import ErpTools, SqlAgent
+from erp_ai.config import Settings, get_settings
+from erp_ai.db import models
+from erp_ai.db.engine import create_engine_for
+from erp_ai.observability.usage import estimate_cost, log_usage, new_request_id, usage_summary
+from erp_ai.providers.embeddings import build_embedding_provider
+from erp_ai.providers.llm import build_llm
+from erp_ai.providers.vectorstore import build_vector_store
+from erp_ai.rag.chunking import estimate_tokens
+from erp_ai.rag.prompts import SYSTEM_PROMPT, build_user_prompt
+from erp_ai.rag.retrieval import Retriever
+
+ROLES = {"daf", "controleur", "commercial", "admin"}
+
+
+def _format_row(row: dict[str, Any]) -> str:
+    """Formate une ligne SQL en phrase lisible (le LLM local l'indexe)."""
+    parts = [f"{key.replace('_', ' ')} : {value}" for key, value in row.items()]
+    return " ; ".join(parts) + "."
+
+
+class CopilotService:
+    """Facade applicative du copilote ERP."""
+
+    def __init__(self, settings: Settings | None = None) -> None:
+        self.settings = settings or get_settings()
+        self.engine = create_engine_for(self.settings)
+        self.embeddings = build_embedding_provider(self.settings)
+        self.vector_store = build_vector_store(self.settings)
+        self.llm = build_llm(self.settings)
+        self.retriever = Retriever(self.engine, self.embeddings, self.vector_store, self.settings)
+        self.tools = ErpTools(self.engine, self.settings)
+        self.sql_agent = SqlAgent(self.engine, self.llm, self.settings)
+
+    # -- Santé -----------------------------------------------------------
+    def health(self) -> dict[str, Any]:
+        """État des dépendances (base, providers, index)."""
+        db_ok = True
+        nb_clients = 0
+        try:
+            with self.engine.connect() as conn:
+                nb_clients = conn.execute(
+                    sa.select(sa.func.count()).select_from(models.client)
+                ).scalar_one()
+        except Exception as exc:  # pragma: no cover - dépend de l'infra
+            db_ok = False
+            nb_clients = f"erreur: {exc}"
+
+        return {
+            "status": "ok" if db_ok else "degraded",
+            "environment": self.settings.environment,
+            "database": {
+                "ok": db_ok,
+                "dialect": self.engine.dialect.name,
+                "clients": nb_clients,
+            },
+            "providers": {
+                "llm": self.llm.name,
+                "model": self.llm.model,
+                "embeddings": self.embeddings.name,
+                "vector_store": self.vector_store.name,
+            },
+            "index": {"fragments": self.vector_store.count()},
+        }
+
+    # -- Ingestion --------------------------------------------------------
+    def ingest(self, force: bool = False) -> dict[str, int]:
+        """Indexe les documents de la base."""
+        return self.retriever.index_documents(force=force)
+
+    # -- Conversation -----------------------------------------------------
+    def ask(
+        self,
+        question: str,
+        client_id: int | None = None,
+        role: str = "daf",
+        top_k: int | None = None,
+    ) -> dict[str, Any]:
+        """Répond à une question (RAG + éventuellement outil SQL)."""
+        if role not in ROLES:
+            raise ValueError(f"Rôle inconnu : {role}")
+        if role == "commercial" and client_id is None:
+            raise PermissionError("Un commercial doit préciser le client concerné.")
+
+        started = time.perf_counter()
+        request_id = new_request_id()
+        top_k = top_k or self.settings.top_k
+
+        retrieved = self.retriever.search(question, client_id=client_id, top_k=top_k)
+        sources: list[dict[str, Any]] = [
+            {
+                "titre": item.titre,
+                "section": item.section,
+                "type_doc": item.type_doc,
+                "client_code": item.client_code,
+                "version": item.version,
+                "texte": item.texte,
+                "score": item.score,
+                "source_ref": item.source_ref,
+            }
+            for item in retrieved
+        ]
+
+        # Outil SQL : uniquement si l'intention est reconnue et validée.
+        sql_info: dict[str, Any] | None = None
+        try:
+            intent = self.sql_agent.detect_intent(question)
+            if intent:
+                result = self.sql_agent.run(question)
+                sql_info = {"sql": result.sql, "rowcount": result.rowcount}
+                for row in result.rows[:10]:
+                    sources.append(
+                        {
+                            "titre": "Requête ERP (SQL en lecture seule)",
+                            "section": intent,
+                            "type_doc": "sql",
+                            "client_code": None,
+                            "version": "-",
+                            "texte": _format_row(row),
+                            "score": None,
+                            "source_ref": "",
+                        }
+                    )
+        except SqlGuardError:
+            sql_info = None
+
+        if not sources:
+            answer = (
+                "Je n'ai pas de source suffisante dans le corpus pour répondre à cette "
+                "question. Aucune donnée n'a été inventée."
+            )
+            statut = "REFUS"
+        else:
+            for index, source in enumerate(sources, start=1):
+                source["source_ref"] = source.get("source_ref") or f"S{index}"
+            prompt = build_user_prompt(sources, question)
+            answer = self.llm.complete(SYSTEM_PROMPT, prompt)
+            statut = "OK"
+
+        tokens_in = estimate_tokens(SYSTEM_PROMPT) + estimate_tokens(
+            build_user_prompt(sources, question)
+        )
+        tokens_out = estimate_tokens(answer)
+        cout = estimate_cost(self.settings, self.llm.model, tokens_in, tokens_out)
+        latence_ms = int((time.perf_counter() - started) * 1000)
+
+        log_usage(
+            self.engine,
+            request_id=request_id,
+            provider=self.llm.name,
+            modele=self.llm.model,
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            cout_eur=cout,
+            latence_ms=latence_ms,
+            question=question,
+            user_role=role,
+            client_id=client_id,
+            statut=statut,
+        )
+
+        with self.engine.begin() as conn:
+            conn.execute(
+                models.conversation.insert().values(
+                    request_id=request_id,
+                    role=role,
+                    client_id=client_id,
+                    question=question,
+                    reponse=answer,
+                    sources=[
+                        {
+                            "ref": s["source_ref"],
+                            "document": s["titre"],
+                            "section": s["section"],
+                        }
+                        for s in sources
+                    ],
+                    feedback=None,
+                    cree_le=datetime.now(),
+                )
+            )
+
+        return {
+            "request_id": request_id,
+            "answer": answer,
+            "sources": [
+                {
+                    "ref": s["source_ref"],
+                    "document": s["titre"],
+                    "section": s["section"],
+                    "type": s["type_doc"],
+                    "score": s["score"],
+                }
+                for s in sources
+            ],
+            "sql": sql_info,
+            "usage": {
+                "provider": self.llm.name,
+                "model": self.llm.model,
+                "tokens_in": tokens_in,
+                "tokens_out": tokens_out,
+                "cout_eur": cout,
+                "latence_ms": latence_ms,
+            },
+            "statut": statut,
+        }
+
+    def run_sql(self, question: str) -> dict[str, Any]:
+        """Exécute une requête SQL encadrée (démonstration Text-to-SQL)."""
+        result = self.sql_agent.run(question)
+        return {"sql": result.sql, "rowcount": result.rowcount, "rows": result.rows}
+
+    def usage(self, days: int = 30) -> list[dict[str, Any]]:
+        """Synthèse de consommation."""
+        return usage_summary(self.engine, days=days)
