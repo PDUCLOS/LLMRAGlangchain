@@ -41,8 +41,31 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev,sqlserver,langchain]"
 
+      - name: Installer le pilote ODBC Microsoft (msodbcsql18)
+        run: |
+          set -euo pipefail
+          # `pyodbc` est un binding : sans le pilote Microsoft, la connexion
+          # échoue avec « Can't open lib 'ODBC Driver 18 for SQL Server' ».
+          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+            | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
+          . /etc/os-release
+          INSTALLED=0
+          for VER in "${VERSION_ID:-24.04}" 24.04 22.04; do
+            if curl -fsSL "https://packages.microsoft.com/config/ubuntu/${VER}/prod.list" \
+                 | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null; then
+              echo "dépôt Microsoft : ubuntu/${VER}"
+              INSTALLED=1
+              break
+            fi
+          done
+          [ "$INSTALLED" = "1" ] || { echo "Aucun dépôt Microsoft trouvé"; exit 1; }
+          sudo apt-get update -qq
+          sudo ACCEPT_EULA=Y apt-get install -y -qq msodbcsql18 unixodbc-dev
+          echo "--- pilotes ODBC installés ---"
+          odbcinst -q -d
+
       - name: Lint
-        run: ruff check src tests
+        run: ruff check src tests scripts
 
       - name: Contrôle de types
         run: mypy src || true
