@@ -44,7 +44,7 @@ class HashingEmbeddings:
     @staticmethod
     def _features(text: str) -> list[str]:
         tokens = [t.lower() for t in _TOKEN_RE.findall(text)]
-        bigrams = [f"{a}_{b}" for a, b in zip(tokens, tokens[1:])]
+        bigrams = [f"{a}_{b}" for a, b in zip(tokens, tokens[1:], strict=False)]
         return tokens + bigrams
 
     def _embed_one(self, text: str) -> np.ndarray:

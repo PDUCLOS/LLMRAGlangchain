@@ -16,8 +16,12 @@ from erp_ai.db import models
 def test_volumes(engine) -> None:
     with engine.connect() as conn:
         assert conn.execute(sa.select(sa.func.count()).select_from(models.client)).scalar_one() == 8
-        assert conn.execute(sa.select(sa.func.count()).select_from(models.article)).scalar_one() == 10
-        assert conn.execute(sa.select(sa.func.count()).select_from(models.facture)).scalar_one() == 30
+        assert (
+            conn.execute(sa.select(sa.func.count()).select_from(models.article)).scalar_one() == 10
+        )
+        assert (
+            conn.execute(sa.select(sa.func.count()).select_from(models.facture)).scalar_one() == 30
+        )
         assert (
             conn.execute(sa.select(sa.func.count()).select_from(models.document)).scalar_one() == 5
         )
@@ -25,16 +29,22 @@ def test_volumes(engine) -> None:
 
 def test_facture_egale_somme_des_lignes(engine) -> None:
     with engine.connect() as conn:
-        lignes = conn.execute(
-            sa.select(
-                models.ligne_facture.c.facture_id,
-                sa.func.sum(models.ligne_facture.c.montant_ht).label("somme"),
-            ).group_by(models.ligne_facture.c.facture_id)
-        ).mappings().all()
+        lignes = (
+            conn.execute(
+                sa.select(
+                    models.ligne_facture.c.facture_id,
+                    sa.func.sum(models.ligne_facture.c.montant_ht).label("somme"),
+                ).group_by(models.ligne_facture.c.facture_id)
+            )
+            .mappings()
+            .all()
+        )
         sommes = {row["facture_id"]: float(row["somme"]) for row in lignes}
-        factures = conn.execute(
-            sa.select(models.facture.c.id, models.facture.c.montant_ht)
-        ).mappings().all()
+        factures = (
+            conn.execute(sa.select(models.facture.c.id, models.facture.c.montant_ht))
+            .mappings()
+            .all()
+        )
 
     for facture in factures:
         assert round(sommes[facture["id"]], 2) == round(float(facture["montant_ht"]), 2), (
@@ -44,9 +54,11 @@ def test_facture_egale_somme_des_lignes(engine) -> None:
 
 def test_ttc_egal_ht_au_dixieme(engine) -> None:
     with engine.connect() as conn:
-        rows = conn.execute(
-            sa.select(models.facture.c.montant_ht, models.facture.c.montant_ttc)
-        ).mappings().all()
+        rows = (
+            conn.execute(sa.select(models.facture.c.montant_ht, models.facture.c.montant_ttc))
+            .mappings()
+            .all()
+        )
     for row in rows:
         ht = float(row["montant_ht"])
         ttc = float(row["montant_ttc"])
@@ -55,19 +67,23 @@ def test_ttc_egal_ht_au_dixieme(engine) -> None:
 
 def test_reglement_coherent_avec_le_statut(engine) -> None:
     with engine.connect() as conn:
-        rows = conn.execute(
-            sa.select(
-                models.facture.c.id,
-                models.facture.c.statut,
-                sa.func.count(models.reglement.c.id).label("nb_reglements"),
-            )
-            .select_from(
-                models.facture.outerjoin(
-                    models.reglement, models.reglement.c.facture_id == models.facture.c.id
+        rows = (
+            conn.execute(
+                sa.select(
+                    models.facture.c.id,
+                    models.facture.c.statut,
+                    sa.func.count(models.reglement.c.id).label("nb_reglements"),
                 )
+                .select_from(
+                    models.facture.outerjoin(
+                        models.reglement, models.reglement.c.facture_id == models.facture.c.id
+                    )
+                )
+                .group_by(models.facture.c.id)
             )
-            .group_by(models.facture.c.id)
-        ).mappings().all()
+            .mappings()
+            .all()
+        )
 
     statuts = {row["statut"] for row in rows}
     assert statuts <= {"PAYE", "PARTIEL", "IMPAYE", "RETARD"}
@@ -96,10 +112,14 @@ def test_ecritures_equilibrees(engine) -> None:
 
 def test_client_inactif_existe_pour_tester_le_rbac(engine) -> None:
     with engine.connect() as conn:
-        row = conn.execute(
-            sa.select(models.client.c.code, models.client.c.actif).where(
-                models.client.c.code == "CLI-008"
+        row = (
+            conn.execute(
+                sa.select(models.client.c.code, models.client.c.actif).where(
+                    models.client.c.code == "CLI-008"
+                )
             )
-        ).mappings().first()
+            .mappings()
+            .first()
+        )
     assert row is not None
     assert not bool(row["actif"])

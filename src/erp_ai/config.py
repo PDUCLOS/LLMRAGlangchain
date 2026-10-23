@@ -72,9 +72,7 @@ class Settings(BaseSettings):
     bm25_b: float = 0.75
 
     # --- Garde-fous SQL ---------------------------------------------------
-    sql_allowed_tables: str = (
-        "client,article,facture,ligne_facture,reglement,ecriture_comptable"
-    )
+    sql_allowed_tables: str = "client,article,facture,ligne_facture,reglement,ecriture_comptable"
     sql_readonly_user: str = "erp_readonly"
     sql_readonly_password: str = ""
 

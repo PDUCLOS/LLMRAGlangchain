@@ -27,9 +27,35 @@ from erp_ai.rag.chunking import chunk_document
 
 _TOKEN_RE = re.compile(r"[\wÀ-ÿ]{2,}", re.UNICODE)
 _STOPWORDS = {
-    "les", "des", "une", "pour", "avec", "sur", "dans", "par", "est", "sont",
-    "les", "leur", "que", "qui", "quoi", "comment", "quel", "quelle", "combien",
-    "les", "au", "aux", "du", "de", "la", "le", "et", "ou", "a", "à", "en",
+    "les",
+    "des",
+    "une",
+    "pour",
+    "avec",
+    "sur",
+    "dans",
+    "par",
+    "est",
+    "sont",
+    "leur",
+    "que",
+    "qui",
+    "quoi",
+    "comment",
+    "quel",
+    "quelle",
+    "combien",
+    "au",
+    "aux",
+    "du",
+    "de",
+    "la",
+    "le",
+    "et",
+    "ou",
+    "a",
+    "à",
+    "en",
 }
 
 RRF_K = 60
@@ -125,16 +151,20 @@ class Retriever:
     def index_documents(self, force: bool = False) -> dict[str, int]:
         """Découpe, vectorise et indexe les documents de la base."""
         with self.engine.begin() as conn:
-            docs = conn.execute(
-                sa.select(
-                    models.document.c.id,
-                    models.document.c.titre,
-                    models.document.c.type_doc,
-                    models.document.c.version,
-                    models.document.c.client_id,
-                    models.document.c.contenu,
+            docs = (
+                conn.execute(
+                    sa.select(
+                        models.document.c.id,
+                        models.document.c.titre,
+                        models.document.c.type_doc,
+                        models.document.c.version,
+                        models.document.c.client_id,
+                        models.document.c.contenu,
+                    )
                 )
-            ).mappings().all()
+                .mappings()
+                .all()
+            )
 
             nb_docs = nb_chunks = 0
             for doc in docs:
@@ -147,7 +177,9 @@ class Retriever:
                     continue
 
                 if existing:
-                    conn.execute(models.chunk.delete().where(models.chunk.c.document_id == doc["id"]))
+                    conn.execute(
+                        models.chunk.delete().where(models.chunk.c.document_id == doc["id"])
+                    )
 
                 drafts = chunk_document(
                     doc["contenu"],
@@ -200,22 +232,19 @@ class Retriever:
 
     # -- Recherche -------------------------------------------------------
     def _load_corpus(self, client_id: int | None) -> list[dict[str, Any]]:
-        stmt = (
-            sa.select(
-                models.chunk.c.id,
-                models.chunk.c.texte,
-                models.chunk.c.section,
-                models.document.c.id.label("document_id"),
-                models.document.c.titre,
-                models.document.c.type_doc,
-                models.document.c.version,
-                models.client.c.code.label("client_code"),
-            )
-            .select_from(
-                models.chunk.join(
-                    models.document, models.chunk.c.document_id == models.document.c.id
-                ).outerjoin(models.client, models.document.c.client_id == models.client.c.id)
-            )
+        stmt = sa.select(
+            models.chunk.c.id,
+            models.chunk.c.texte,
+            models.chunk.c.section,
+            models.document.c.id.label("document_id"),
+            models.document.c.titre,
+            models.document.c.type_doc,
+            models.document.c.version,
+            models.client.c.code.label("client_code"),
+        ).select_from(
+            models.chunk.join(
+                models.document, models.chunk.c.document_id == models.document.c.id
+            ).outerjoin(models.client, models.document.c.client_id == models.client.c.id)
         )
         if client_id is not None:
             stmt = stmt.where(

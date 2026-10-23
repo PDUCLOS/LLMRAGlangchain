@@ -124,13 +124,17 @@ class ErpTools:
                 tranches["61-90"] += montant
             else:
                 tranches["90+"] += montant
-            par_client[ligne["raison_sociale"]] = par_client.get(ligne["raison_sociale"], 0.0) + montant
+            par_client[ligne["raison_sociale"]] = (
+                par_client.get(ligne["raison_sociale"], 0.0) + montant
+            )
 
         return {
             "nb_factures": len(lignes),
-            "total_ttc": round(sum(l["montant_ttc"] for l in lignes), 2),
+            "total_ttc": round(sum(ligne["montant_ttc"] for ligne in lignes), 2),
             "par_tranche": {k: round(v, 2) for k, v in tranches.items()},
-            "par_client": {k: round(v, 2) for k, v in sorted(par_client.items(), key=lambda i: -i[1])},
+            "par_client": {
+                k: round(v, 2) for k, v in sorted(par_client.items(), key=lambda i: -i[1])
+            },
             "seuil_jours": min_jours,
         }
 
@@ -161,7 +165,11 @@ class ErpTools:
                 }
                 for row in conn.execute(stmt).mappings().all()
             ]
-        return {"annee": annee, "total_ht": round(sum(r["ca_ht"] for r in rows), 2), "par_client": rows}
+        return {
+            "annee": annee,
+            "total_ht": round(sum(r["ca_ht"] for r in rows), 2),
+            "par_client": rows,
+        }
 
     def top_clients(self, annee: int, limit: int = 5) -> list[dict[str, Any]]:
         """Top clients de l'année (encours autorisé inclus)."""

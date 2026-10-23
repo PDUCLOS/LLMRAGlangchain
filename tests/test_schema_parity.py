@@ -16,9 +16,7 @@ from erp_ai.db import models
 
 SQL_FILE = Path(__file__).resolve().parents[1] / "sql" / "00_schema.sql"
 
-CREATE_TABLE_RE = re.compile(
-    r"CREATE TABLE dbo\.(\w+)\s*\((.*?)\n\);", re.DOTALL | re.IGNORECASE
-)
+CREATE_TABLE_RE = re.compile(r"CREATE TABLE dbo\.(\w+)\s*\((.*?)\n\);", re.DOTALL | re.IGNORECASE)
 COLUMN_RE = re.compile(r"^([a-z_][a-z0-9_]*)\s+[A-Z]", re.IGNORECASE)
 
 

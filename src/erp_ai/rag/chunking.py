@@ -55,7 +55,9 @@ def split_sections(text: str) -> list[tuple[str, str]]:
     if current_lines and "".join(current_lines).strip():
         sections.append((current_title, current_lines))
 
-    return [(title, "\n".join(lines).strip()) for title, lines in sections if "\n".join(lines).strip()]
+    return [
+        (title, "\n".join(lines).strip()) for title, lines in sections if "\n".join(lines).strip()
+    ]
 
 
 def _paragraphs(text: str) -> list[str]:
@@ -121,7 +123,7 @@ def chunk_document(
         buffer_tokens = 0
         tail = ""
 
-        def flush() -> None:
+        def flush(section_title: str = section_title) -> None:
             nonlocal ordinal, buffer, buffer_tokens, tail
             if not buffer:
                 return

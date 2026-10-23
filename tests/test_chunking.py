@@ -37,9 +37,7 @@ def test_le_chevauchement_est_present_au_sein_d_une_section() -> None:
     on ne mélange jamais deux sections différentes.
     """
     drafts = chunk_document(DOC_PROCEDURE_RELANCE, size=80, overlap=20)
-    paires = [
-        (a, b) for a, b in zip(drafts, drafts[1:], strict=False) if a.section == b.section
-    ]
+    paires = [(a, b) for a, b in zip(drafts, drafts[1:], strict=False) if a.section == b.section]
     assert paires, "Aucune paire de fragments consécutifs dans la même section"
     for premier, second in paires:
         queue_premier = premier.texte.split()[-10:]

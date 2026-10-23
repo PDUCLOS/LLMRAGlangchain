@@ -50,7 +50,9 @@ def test_le_seed_s_est_charge_sur_sql_server(engine) -> None:
 def test_les_identifiants_sont_generes_par_identity(engine) -> None:
     _require_sqlserver(engine)
     with engine.connect() as conn:
-        ids = conn.execute(sa.select(models.client.c.id).order_by(models.client.c.id)).scalars().all()
+        ids = (
+            conn.execute(sa.select(models.client.c.id).order_by(models.client.c.id)).scalars().all()
+        )
     assert len(ids) == len(set(ids))
     assert all(isinstance(i, int) and i > 0 for i in ids)
 
@@ -59,9 +61,11 @@ def test_les_types_numeriques_sont_exacts_sur_sql_server(engine) -> None:
     """DECIMAL(18,2) : pas de dérive de virgule flottante sur les montants."""
     _require_sqlserver(engine)
     with engine.connect() as conn:
-        facture = conn.execute(
-            sa.select(models.facture.c.numero, models.facture.c.montant_ht).limit(1)
-        ).mappings().first()
+        facture = (
+            conn.execute(sa.select(models.facture.c.numero, models.facture.c.montant_ht).limit(1))
+            .mappings()
+            .first()
+        )
     assert facture is not None
     assert facture["montant_ht"] is not None
     # La valeur relue doit rester un Decimal exact (2 décimales)
@@ -69,8 +73,9 @@ def test_les_types_numeriques_sont_exacts_sur_sql_server(engine) -> None:
 
 
 def test_la_recherche_des_impayes_fonctionne_sur_sql_server(engine, settings) -> None:
-    from erp_ai.agents.tools import ErpTools
     from datetime import date
+
+    from erp_ai.agents.tools import ErpTools
 
     _require_sqlserver(engine)
     tools = ErpTools(engine, settings)

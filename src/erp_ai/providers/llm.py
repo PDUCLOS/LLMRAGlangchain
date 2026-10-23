@@ -87,11 +87,7 @@ class ExtractiveLocalLLM:
             lignes.append(f"- {phrase} [S{src_id}]")
         corps = "\n".join(lignes)
         refs = ", ".join("S" + s["id"] for s in sources)
-        return (
-            "D'après les documents disponibles :\n"
-            f"{corps}\n\n"
-            f"Sources : {refs}."
-        )
+        return f"D'après les documents disponibles :\n{corps}\n\nSources : {refs}."
 
 
 class AzureChatLLM:

@@ -106,18 +106,11 @@ def build_rag_chain(
     """
     answer_chain = build_answer_chain(settings, llm=llm, chat_model=chat_model)
 
-    chain: Runnable = (
-        {
-            "context": RunnableLambda(
-                lambda question: chunks_to_documents(retriever.search(question))
-            )
-            | RunnableLambda(
-                lambda docs: format_source_blocks(documents_to_sources(docs))
-            ),
-            "question": RunnablePassthrough(),
-        }
-        | answer_chain
-    )
+    chain: Runnable = {
+        "context": RunnableLambda(lambda question: chunks_to_documents(retriever.search(question)))
+        | RunnableLambda(lambda docs: format_source_blocks(documents_to_sources(docs))),
+        "question": RunnablePassthrough(),
+    } | answer_chain
     return chain
 
 
@@ -134,8 +127,7 @@ def build_answer_chain(
     """
     if not LANGCHAIN_AVAILABLE:
         raise RuntimeError(
-            "LangChain n'est pas installé : `pip install -e '.[langchain]'` "
-            "ou RAG_CHAIN=native."
+            "LangChain n'est pas installé : `pip install -e '.[langchain]'` ou RAG_CHAIN=native."
         )
 
     prompt = ChatPromptTemplate.from_messages(

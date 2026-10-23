@@ -53,16 +53,20 @@ def liste_clients() -> list[dict[str, Any]]:
     """Liste des clients (équivalent GET /clients d'un ERP)."""
     engine = _engine()
     with engine.connect() as conn:
-        rows = conn.execute(
-            sa.select(
-                models.client.c.code,
-                models.client.c.raison_sociale,
-                models.client.c.secteur,
-                models.client.c.ville,
-                models.client.c.encours_autorise,
-                models.client.c.actif,
-            ).order_by(models.client.c.code)
-        ).mappings().all()
+        rows = (
+            conn.execute(
+                sa.select(
+                    models.client.c.code,
+                    models.client.c.raison_sociale,
+                    models.client.c.secteur,
+                    models.client.c.ville,
+                    models.client.c.encours_autorise,
+                    models.client.c.actif,
+                ).order_by(models.client.c.code)
+            )
+            .mappings()
+            .all()
+        )
     return [dict(row) for row in rows]
 
 
@@ -71,28 +75,36 @@ def detail_client(code: str) -> dict[str, Any]:
     """Détail d'un client et de ses factures."""
     engine = _engine()
     with engine.connect() as conn:
-        client = conn.execute(
-            sa.select(models.client).where(models.client.c.code == code)
-        ).mappings().first()
+        client = (
+            conn.execute(sa.select(models.client).where(models.client.c.code == code))
+            .mappings()
+            .first()
+        )
         if client is None:
             raise HTTPException(status_code=404, detail=f"Client inconnu : {code}")
-        factures = conn.execute(
-            sa.select(
-                models.facture.c.numero,
-                models.facture.c.date_emission,
-                models.facture.c.date_echeance,
-                models.facture.c.montant_ht,
-                models.facture.c.montant_ttc,
-                models.facture.c.statut,
+        factures = (
+            conn.execute(
+                sa.select(
+                    models.facture.c.numero,
+                    models.facture.c.date_emission,
+                    models.facture.c.date_echeance,
+                    models.facture.c.montant_ht,
+                    models.facture.c.montant_ttc,
+                    models.facture.c.statut,
+                )
+                .where(models.facture.c.client_id == client["id"])
+                .order_by(models.facture.c.date_emission.desc())
             )
-            .where(models.facture.c.client_id == client["id"])
-            .order_by(models.facture.c.date_emission.desc())
-        ).mappings().all()
+            .mappings()
+            .all()
+        )
     return {"client": dict(client), "factures": [dict(row) for row in factures]}
 
 
 @router.get("/factures")
-def liste_factures(statut: str | None = None, client_code: str | None = None) -> list[dict[str, Any]]:
+def liste_factures(
+    statut: str | None = None, client_code: str | None = None
+) -> list[dict[str, Any]]:
     """Factures, filtrables par statut et par client."""
     engine = _engine()
     stmt = (
@@ -104,7 +116,9 @@ def liste_factures(statut: str | None = None, client_code: str | None = None) ->
             models.client.c.code.label("client_code"),
             models.client.c.raison_sociale,
         )
-        .select_from(models.facture.join(models.client, models.facture.c.client_id == models.client.c.id))
+        .select_from(
+            models.facture.join(models.client, models.facture.c.client_id == models.client.c.id)
+        )
         .order_by(models.facture.c.date_echeance)
     )
     if statut:

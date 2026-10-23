@@ -10,7 +10,7 @@ from typing import Any
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 
-from erp_ai.config import Settings, get_settings
+from erp_ai.config import Settings
 from erp_ai.db import models
 
 
@@ -28,9 +28,7 @@ def estimate_cost(
 ) -> float:
     """Estime le coût en euros (tarifs indicatifs configurables)."""
     if embedding:
-        return round(
-            tokens_in * settings.cost_embedding_eur_per_mtok / 1_000_000, 6
-        )
+        return round(tokens_in * settings.cost_embedding_eur_per_mtok / 1_000_000, 6)
     cost_in = tokens_in * settings.cost_chat_input_eur_per_mtok / 1_000_000
     cost_out = tokens_out * settings.cost_chat_output_eur_per_mtok / 1_000_000
     return round(cost_in + cost_out, 6)

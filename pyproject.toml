@@ -67,6 +67,11 @@ src = ["src", "tests"]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+# `Depends(...)` en valeur par défaut est le mécanisme d'injection de FastAPI :
+# B008 est un faux positif sur ce motif.
+"src/erp_ai/api/main.py" = ["B008"]
+
 [tool.mypy]
 python_version = "3.11"
 ignore_missing_imports = true

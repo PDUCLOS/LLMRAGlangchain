@@ -41,10 +41,10 @@ def test_synthese_impayes_est_coherente(engine, settings) -> None:
     synthese = tools.synthese_impayes(aujourdhui=date(2026, 11, 1))
     lignes = tools.impayes(aujourdhui=date(2026, 11, 1))
     assert synthese["nb_factures"] == len(lignes)
-    assert synthese["total_ttc"] == pytest.approx(sum(l["montant_ttc"] for l in lignes), abs=0.01)
-    assert sum(synthese["par_tranche"].values()) == pytest.approx(
-        synthese["total_ttc"], abs=0.01
+    assert synthese["total_ttc"] == pytest.approx(
+        sum(ligne["montant_ttc"] for ligne in lignes), abs=0.01
     )
+    assert sum(synthese["par_tranche"].values()) == pytest.approx(synthese["total_ttc"], abs=0.01)
 
 
 def test_chiffre_affaires_annuel(engine, settings) -> None:

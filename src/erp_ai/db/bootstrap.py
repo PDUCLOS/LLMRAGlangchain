@@ -145,9 +145,23 @@ def seed(engine: Engine) -> dict[str, int]:
 
             # Écritures en partie double : 411 D (TTC) / 706 C (HT) / 44571 C (TVA).
             ecritures = [
-                ("VE", "411000", f"Client {code_client} - {numero}", montant_ttc, Decimal("0"), numero),
+                (
+                    "VE",
+                    "411000",
+                    f"Client {code_client} - {numero}",
+                    montant_ttc,
+                    Decimal("0"),
+                    numero,
+                ),
                 ("VE", "706000", f"Ventes {numero}", Decimal("0"), montant_ht, numero),
-                ("VE", "445710", f"TVA collectée {numero}", Decimal("0"), montant_ttc - montant_ht, numero),
+                (
+                    "VE",
+                    "445710",
+                    f"TVA collectée {numero}",
+                    Decimal("0"),
+                    montant_ttc - montant_ht,
+                    numero,
+                ),
             ]
             for journal, compte, libelle, debit, credit, piece in ecritures:
                 conn.execute(

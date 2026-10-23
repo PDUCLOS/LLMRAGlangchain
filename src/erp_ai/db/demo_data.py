@@ -23,7 +23,15 @@ CLIENTS = [
     ("CLI-004", "Atelier Meyer SARL", "Industrie", "France", "Saint-Priest", 15000, True),
     ("CLI-005", "Groupe Valdec", "Industrie", "France", "Lyon", 80000, True),
     ("CLI-006", "Matériaux Express", "Négoce / matériaux", "France", "Vénissieux", 25000, True),
-    ("CLI-007", "Charpentes du Rhône", "Bâtiment / charpente", "France", "Vaulx-en-Velin", 40000, True),
+    (
+        "CLI-007",
+        "Charpentes du Rhône",
+        "Bâtiment / charpente",
+        "France",
+        "Vaulx-en-Velin",
+        40000,
+        True,
+    ),
     ("CLI-008", "SODIP Distribution", "Négoce", "France", "Bron", 12000, False),
 ]
 

@@ -86,6 +86,5 @@ def build_user_prompt(sources: Sequence[dict], question: str) -> str:
 def build_sql_prompt(question: str, schema_hint: str) -> str:
     """Assemble le prompt de génération SQL."""
     return (
-        f"[SCHEMA]\n{schema_hint.strip()}\n[/SCHEMA]\n\n"
-        f"[QUESTION]\n{question.strip()}\n[/QUESTION]"
+        f"[SCHEMA]\n{schema_hint.strip()}\n[/SCHEMA]\n\n[QUESTION]\n{question.strip()}\n[/QUESTION]"
     )

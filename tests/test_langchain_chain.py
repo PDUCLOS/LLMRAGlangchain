@@ -73,7 +73,9 @@ def test_la_chaine_repond_avec_le_llm_local(service, settings) -> None:
             for r in sources
         ]
     )
-    reponse = chaine.invoke({"context": contexte, "question": "Quels sont les délais de paiement ?"})
+    reponse = chaine.invoke(
+        {"context": contexte, "question": "Quels sont les délais de paiement ?"}
+    )
     assert reponse
     assert "[S" in reponse
 

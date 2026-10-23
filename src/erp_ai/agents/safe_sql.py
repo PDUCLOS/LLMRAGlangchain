@@ -13,10 +13,30 @@ from __future__ import annotations
 import re
 
 FORBIDDEN_KEYWORDS = {
-    "insert", "update", "delete", "merge", "drop", "alter", "truncate",
-    "create", "exec", "execute", "grant", "revoke", "deny", "backup",
-    "restore", "dbcc", "openrowset", "opendatasource", "xp_cmdshell",
-    "sp_executesql", "bcp", "shutdown", "use", "into",
+    "insert",
+    "update",
+    "delete",
+    "merge",
+    "drop",
+    "alter",
+    "truncate",
+    "create",
+    "exec",
+    "execute",
+    "grant",
+    "revoke",
+    "deny",
+    "backup",
+    "restore",
+    "dbcc",
+    "openrowset",
+    "opendatasource",
+    "xp_cmdshell",
+    "sp_executesql",
+    "bcp",
+    "shutdown",
+    "use",
+    "into",
 }
 
 ALLOWED_START = {"select", "with"}

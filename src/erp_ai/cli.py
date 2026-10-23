@@ -1,11 +1,11 @@
 """CLI du copilote ERP.
 
-    python -m erp_ai.cli init-db
-    python -m erp_ai.cli ingest
-    python -m erp_ai.cli ask "Quelles sont les règles de relance client ?"
-    python -m erp_ai.cli sql "Quelles factures sont en retard ?"
-    python -m erp_ai.cli eval
-    python -m erp_ai.cli serve
+python -m erp_ai.cli init-db
+python -m erp_ai.cli ingest
+python -m erp_ai.cli ask "Quelles sont les règles de relance client ?"
+python -m erp_ai.cli sql "Quelles factures sont en retard ?"
+python -m erp_ai.cli eval
+python -m erp_ai.cli serve
 """
 
 from __future__ import annotations
@@ -148,7 +148,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_ask = sub.add_parser("ask", help="poser une question au copilote")
     p_ask.add_argument("question")
     p_ask.add_argument("--client-id", type=int, default=None)
-    p_ask.add_argument("--role", default="daf", choices=["daf", "controleur", "commercial", "admin"])
+    p_ask.add_argument(
+        "--role", default="daf", choices=["daf", "controleur", "commercial", "admin"]
+    )
     p_ask.add_argument("--top-k", type=int, default=None)
     p_ask.add_argument("--json", action="store_true")
     p_ask.set_defaults(func=_cmd_ask)
@@ -181,7 +183,7 @@ def main(argv: list[str] | None = None) -> int:
     """Point d'entrée de la CLI."""
     parser = build_parser()
     args = parser.parse_args(argv)
-    handler: Any = getattr(args, "func")
+    handler: Any = args.func
     return int(handler(args) or 0)
 
 
