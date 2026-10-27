@@ -125,27 +125,8 @@ class CopilotService:
         ]
 
         # Outil SQL : uniquement si l'intention est reconnue et validée.
-        sql_info: dict[str, Any] | None = None
-        try:
-            intent = self.sql_agent.detect_intent(question)
-            if intent:
-                result = self.sql_agent.run(question)
-                sql_info = {"sql": result.sql, "rowcount": result.rowcount}
-                for row in result.rows[:10]:
-                    sources.append(
-                        {
-                            "titre": "Requête ERP (SQL en lecture seule)",
-                            "section": intent,
-                            "type_doc": "sql",
-                            "client_code": None,
-                            "version": "-",
-                            "texte": _format_row(row),
-                            "score": None,
-                            "source_ref": "",
-                        }
-                    )
-        except SqlGuardError:
-            sql_info = None
+        sql_sources, sql_info = self.sql_sources(question)
+        sources.extend(sql_sources)
 
         if not sources:
             answer = (
@@ -276,6 +257,52 @@ class CopilotService:
         except Exception as exc:  # pragma: no cover - dépend de l'installation
             logger.warning("Chaîne LangChain indisponible, repli sur la chaîne native : %s", exc)
             return None
+
+    def sql_sources(
+        self, question: str, max_rows: int = 10
+    ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+        """Sources issues de l'outil SQL (vide si aucune intention reconnue)."""
+        try:
+            intent = self.sql_agent.detect_intent(question)
+            if not intent:
+                return [], None
+            result = self.sql_agent.run(question)
+        except SqlGuardError:
+            return [], None
+
+        def source(titre: str, texte: str) -> dict[str, Any]:
+            return {
+                "titre": titre,
+                "section": intent,
+                "type_doc": "sql",
+                "client_code": None,
+                "version": "-",
+                "texte": texte,
+                "score": None,
+                "source_ref": "",
+            }
+
+        sources: list[dict[str, Any]] = []
+        if intent == "impayes" and "min_jours" in result.meta:
+            meta = result.meta
+            portee = (
+                "Liste exhaustive ci-dessous."
+                if result.rowcount <= max_rows
+                else f"Les {max_rows} plus anciennes sont listées ci-dessous."
+            )
+            sources.append(
+                source(
+                    "Balance âgée ERP (calcul déterministe)",
+                    f"Au {meta['aujourdhui']}, {result.rowcount} facture(s) non soldée(s) "
+                    f"en retard d'au moins {meta['min_jours']} jours, pour un total TTC de "
+                    f"{meta['total_ttc']} EUR. {portee}",
+                )
+            )
+        sources += [
+            source("Requête ERP (SQL en lecture seule)", _format_row(row))
+            for row in result.rows[:max_rows]
+        ]
+        return sources, {"sql": result.sql, "rowcount": result.rowcount}
 
     def run_sql(self, question: str) -> dict[str, Any]:
         """Exécute une requête SQL encadrée (démonstration Text-to-SQL)."""

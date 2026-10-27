@@ -15,7 +15,8 @@ fonctionne sur SQL Server et sur SQLite, sans dialecte spécifique.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
@@ -35,6 +36,40 @@ class SqlResult:
     sql: str
     rows: list[dict[str, Any]]
     rowcount: int
+    meta: dict[str, Any] = field(default_factory=dict)
+
+
+def _as_date(value: Any) -> date | None:
+    """Normalise une date ERP (datetime, date ou texte ISO selon le dialecte)."""
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return datetime.fromisoformat(str(value)).date()
+
+
+def avec_anciennete(
+    rows: list[dict[str, Any]], today: date, min_jours: int = 0
+) -> list[dict[str, Any]]:
+    """Ajoute `jours_retard` aux factures et écarte celles sous le seuil."""
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        echeance = _as_date(row["date_echeance"])
+        jours = (today - echeance).days if echeance else 0
+        if jours < min_jours:
+            continue
+        enrichie = {**row, "jours_retard": jours}
+        for montant in ("montant_ttc", "montant_ht"):
+            if montant in row:
+                enrichie[montant] = float(row[montant] or 0)
+        enrichie["date_echeance"] = echeance.isoformat() if echeance else None
+        if "date_emission" in row:
+            emission = _as_date(row["date_emission"])
+            enrichie["date_emission"] = emission.isoformat() if emission else None
+        out.append(enrichie)
+    return out
 
 
 class ErpTools:
@@ -77,31 +112,7 @@ class ErpTools:
         with self.engine.connect() as conn:
             rows = [dict(row) for row in conn.execute(stmt).mappings().all()]
 
-        out: list[dict[str, Any]] = []
-        for row in rows:
-            echeance = row["date_echeance"]
-            if isinstance(echeance, datetime):
-                echeance = echeance.date()
-            elif isinstance(echeance, str):
-                echeance = datetime.fromisoformat(echeance).date()
-            jours = (today - echeance).days if echeance else 0
-            if jours < min_jours:
-                continue
-            out.append(
-                {
-                    **row,
-                    "jours_retard": jours,
-                    "montant_ttc": float(row["montant_ttc"] or 0),
-                    "montant_ht": float(row["montant_ht"] or 0),
-                    "date_echeance": echeance.isoformat() if echeance else None,
-                    "date_emission": (
-                        row["date_emission"].date().isoformat()
-                        if isinstance(row["date_emission"], datetime)
-                        else str(row["date_emission"])
-                    ),
-                }
-            )
-        return out
+        return avec_anciennete(rows, today, min_jours)
 
     def synthese_impayes(
         self,
@@ -229,7 +240,8 @@ class SqlAgent:
 
     TEMPLATES: dict[str, str] = {
         "impayes": (
-            "SELECT f.numero, c.raison_sociale, f.montant_ttc, f.date_echeance, f.statut "
+            "SELECT f.numero, c.raison_sociale AS client, f.montant_ttc, f.date_emission, "
+            "f.date_echeance, f.statut "
             "FROM facture f JOIN client c ON c.id = f.client_id "
             "WHERE f.statut <> 'PAYE' ORDER BY f.date_echeance"
         ),
@@ -244,6 +256,12 @@ class SqlAgent:
             "GROUP BY c.id ORDER BY ca_ht DESC"
         ),
     }
+
+    # « au-delà de 60 jours », « plus de 90 jours », « supérieur à 30 j »...
+    SEUIL_RETARD = re.compile(
+        r"(?:au[- ]del[àa]\s+de|plus\s+de|sup[ée]rieure?s?\s+[àa]|>=?)\s*(\d+)\s*j(?:ours?)?\b",
+        re.IGNORECASE,
+    )
 
     def __init__(
         self,
@@ -264,9 +282,18 @@ class SqlAgent:
                 return intent
         return None
 
+    @classmethod
+    def extract_min_jours(cls, question: str) -> int:
+        """Seuil de retard exprimé dans la question (0 s'il n'y en a pas)."""
+        match = cls.SEUIL_RETARD.search(question)
+        return int(match.group(1)) if match else 0
+
+    def _llm_sql(self) -> bool:
+        return self.llm is not None and self.settings.llm_provider.lower() == "azure"
+
     def build_sql(self, question: str) -> str:
         """Produit la requête SQL correspondant à la question."""
-        if self.llm is not None and self.settings.llm_provider.lower() == "azure":
+        if self._llm_sql():
             from erp_ai.rag.prompts import SQL_SYSTEM_PROMPT, build_sql_prompt
 
             schema_hint = (
@@ -287,6 +314,34 @@ class SqlAgent:
             )
         return self.TEMPLATES[intent]
 
-    def run(self, question: str) -> SqlResult:
-        """Construit, valide et exécute la requête."""
+    def run(self, question: str, aujourdhui: date | None = None) -> SqlResult:
+        """Construit, valide et exécute la requête.
+
+        En mode local, l'intention `impayes` est servie par `ErpTools.impayes` :
+        le retard est calculé en Python et le seuil de la question appliqué,
+        plutôt qu'un gabarit SQL qui renverrait toutes les factures non soldées.
+        """
+        if not self._llm_sql() and self.detect_intent(question) == "impayes":
+            return self.run_impayes(question, aujourdhui)
         return self.tools.run_readonly_sql(self.build_sql(question))
+
+    def run_impayes(self, question: str, aujourdhui: date | None = None) -> SqlResult:
+        """Factures non soldées au-delà du seuil de la question, avec ancienneté.
+
+        La lecture passe par le gabarit SQL validé (lecture seule) ; le retard
+        est calculé en Python, comme dans `ErpTools.impayes`.
+        """
+        today = aujourdhui or date.today()
+        min_jours = self.extract_min_jours(question)
+        brut = self.tools.run_readonly_sql(self.TEMPLATES["impayes"])
+        rows = avec_anciennete(brut.rows, today, min_jours)
+        return SqlResult(
+            sql=brut.sql,
+            rows=rows,
+            rowcount=len(rows),
+            meta={
+                "min_jours": min_jours,
+                "aujourdhui": today.isoformat(),
+                "total_ttc": round(sum(r["montant_ttc"] for r in rows), 2),
+            },
+        )

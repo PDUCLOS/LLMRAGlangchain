@@ -6,7 +6,7 @@ from datetime import date
 
 import pytest
 
-from erp_ai.agents.safe_sql import SqlGuardError
+from erp_ai.agents.safe_sql import SqlGuardError, validate_readonly_sql
 from erp_ai.agents.tools import ErpTools
 
 
@@ -78,3 +78,50 @@ def test_detection_d_intention(engine, settings) -> None:
     assert agent.detect_intent("quelles factures sont en retard ?") == "impayes"
     assert agent.detect_intent("quel est le chiffre d'affaires ?") == "ca"
     assert agent.detect_intent("raconte-moi une histoire") is None
+
+
+def test_seuil_de_retard_extrait_de_la_question() -> None:
+    from erp_ai.agents.tools import SqlAgent
+
+    assert SqlAgent.extract_min_jours("Factures en retard au-delà de 60 jours ?") == 60
+    assert SqlAgent.extract_min_jours("impayés depuis plus de 90 jours") == 90
+    assert SqlAgent.extract_min_jours("retard supérieur à 30 j") == 30
+    assert SqlAgent.extract_min_jours("quelles factures sont en retard ?") == 0
+
+
+def test_agent_impayes_applique_le_seuil_de_la_question(engine, settings) -> None:
+    from erp_ai.agents.tools import SqlAgent
+
+    agent = SqlAgent(engine, None, settings)
+    reference = date(2026, 11, 1)
+    resultat = agent.run(
+        "Quelles factures sont en retard de paiement au-delà de 60 jours ?",
+        aujourdhui=reference,
+    )
+    attendu = ErpTools(engine, settings).impayes(min_jours=60, aujourdhui=reference)
+    assert resultat.rowcount == len(attendu) > 0
+    assert resultat.meta["min_jours"] == 60
+    # La lecture reste une requête SQL validée par le garde-fou.
+    assert resultat.sql == validate_readonly_sql(resultat.sql, settings.allowed_tables)
+    assert all(ligne["jours_retard"] >= 60 for ligne in resultat.rows)
+    assert {ligne["numero"] for ligne in resultat.rows} == {a["numero"] for a in attendu}
+
+
+def test_agent_impayes_expose_l_anciennete(engine, settings) -> None:
+    from erp_ai.agents.tools import SqlAgent
+
+    agent = SqlAgent(engine, None, settings)
+    resultat = agent.run("factures en retard au-delà de 30 jours", aujourdhui=date(2026, 11, 1))
+    assert resultat.rows
+    for colonne in ("numero", "client", "montant_ttc", "date_echeance", "jours_retard"):
+        assert colonne in resultat.rows[0]
+
+
+def test_agent_impayes_sans_seuil_renvoie_tous_les_impayes(engine, settings) -> None:
+    from erp_ai.agents.tools import SqlAgent
+
+    agent = SqlAgent(engine, None, settings)
+    reference = date(2026, 11, 1)
+    resultat = agent.run("quelles factures sont en retard ?", aujourdhui=reference)
+    assert resultat.meta["min_jours"] == 0
+    assert resultat.rowcount == len(ErpTools(engine, settings).impayes(aujourdhui=reference))

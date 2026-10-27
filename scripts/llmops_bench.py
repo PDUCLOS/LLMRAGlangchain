@@ -33,7 +33,7 @@ from erp_ai.db.bootstrap import init_db
 from erp_ai.db.engine import create_engine_for
 from erp_ai.evaluation import load_gold_set
 from erp_ai.observability.usage import estimate_cost
-from erp_ai.service import CopilotService, _format_row
+from erp_ai.service import CopilotService
 
 REFUSAL_MARKERS = (
     "pas de source suffisante",
@@ -174,12 +174,11 @@ def run_config(name: str, cfg: dict[str, Any], gold: list[dict], judge_on: bool)
         result = service.ask(question=question, role="daf", top_k=top_k)
         # Le juge doit voir exactement ce que le modèle a vu : documents + lignes SQL.
         blocks = [f"[S{i}] {r.titre} — {r.texte}" for i, r in enumerate(retrieved, start=1)]
-        if result["sql"]:
-            sql_rows = service.sql_agent.run(question).rows[:10]
-            blocks += [
-                f"[S{len(retrieved) + i}] Requête ERP (SQL) — {_format_row(row)}"
-                for i, row in enumerate(sql_rows, start=1)
-            ]
+        sql_sources, _ = service.sql_sources(question)
+        blocks += [
+            f"[S{len(retrieved) + i}] {s['titre']} — {s['texte']}"
+            for i, s in enumerate(sql_sources, start=1)
+        ]
         answer = result["answer"] or ""
         low = answer.lower()
         cited = {int(x) for x in re.findall(r"\[S(\d+)\]", answer)}
