@@ -1,0 +1,41 @@
+# Overlay « poste GPU local » : un cluster mono-nœud (Docker Desktop, k3s,
+# minikube) sur une machine avec carte NVIDIA, image construite localement.
+#   docker build -t erp-ai-copilot:0.2.0 .
+#   kubectl apply -k deploy/k8s/overlays/local-gpu
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patches:
+  # Un seul nœud : une réplique d'API suffit, et le volume partagé peut être RWO.
+  - target: { kind: Deployment, name: erp-ai-api }
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: IfNotPresent
+  - target: { kind: HorizontalPodAutoscaler, name: erp-ai-api }
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2
+  - target: { kind: PersistentVolumeClaim, name: erp-ai-data }
+    patch: |-
+      - op: replace
+        path: /spec/accessModes
+        value: ["ReadWriteOnce"]
+  # Docker Desktop n'étiquette pas les nœuds GPU : on retire le nodeSelector.
+  - target: { kind: Deployment, name: ollama }
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/nodeSelector
+  - target: { kind: Ingress, name: erp-ai-api }
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: erp-ai.localhost

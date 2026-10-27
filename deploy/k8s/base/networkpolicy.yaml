@@ -1,0 +1,14 @@
+# Moindre privilège réseau : SQL Server et Ollama ne sont joignables que
+# depuis les pods du namespace (API, Jobs), jamais depuis l'extérieur.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backends-from-app-only
+spec:
+  podSelector:
+    matchExpressions:
+      - { key: app, operator: In, values: [mssql, ollama] }
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector: {}

@@ -1,0 +1,23 @@
+# Index vectoriel partagé : le Job d'ingestion l'écrit, les pods API le lisent.
+# ReadWriteMany est indispensable dès qu'il y a plusieurs répliques de l'API
+# (Azure Files, NFS, Longhorn...). Alternative : VECTOR_STORE_PROVIDER=azure_ai_search.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: erp-ai-data
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: 2Gi
+---
+# Poids des modèles Ollama : on ne les re-télécharge pas à chaque redémarrage.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-models
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 40Gi

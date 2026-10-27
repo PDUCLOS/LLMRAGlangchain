@@ -1,0 +1,91 @@
+# L'API est sans état : on peut la répliquer et l'autoscaler librement.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: erp-ai-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: erp-ai-api }
+  template:
+    metadata:
+      labels: { app: erp-ai-api }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+      containers:
+        - name: api
+          image: erp-ai-copilot
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef: { name: erp-ai-config }
+            - secretRef: { name: erp-ai-secrets }
+          resources:
+            requests: { cpu: 250m, memory: 512Mi }
+            limits: { memory: 1Gi }
+          # /health interroge la base : un pod ne reçoit du trafic que si elle répond.
+          readinessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 4
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+          volumeMounts:
+            - { name: data, mountPath: /app/data, readOnly: true }
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: erp-ai-data }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: erp-ai-api
+spec:
+  selector: { app: erp-ai-api }
+  ports:
+    - port: 80
+      targetPort: 8000
+---
+# Le goulot est le GPU (Ollama), pas l'API : l'autoscaling CPU de l'API
+# absorbe les pics de requêtes HTTP, pas la génération elle-même.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: erp-ai-api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: erp-ai-api
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: erp-ai-api
+spec:
+  rules:
+    - host: erp-ai.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: erp-ai-api
+                port: { number: 80 }

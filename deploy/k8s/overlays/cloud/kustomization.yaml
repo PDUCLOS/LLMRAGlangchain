@@ -1,0 +1,72 @@
+# Overlay « cloud » (ex. AKS) : base managée, stockage partagé, TLS, registre.
+#   az acr build -r <registre> -t erp-ai-copilot:0.2.0 .
+#   kubectl apply -k deploy/k8s/overlays/cloud
+# Pré-requis : pool de nœuds GPU (NVIDIA device plugin), ingress-nginx,
+# cert-manager, et le secret erp-ai-secrets créé hors dépôt (Key Vault).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: erp-ai-copilot
+    newName: monregistre.azurecr.io/erp-ai-copilot
+    newTag: "0.2.0"
+patches:
+  # Base managée (Azure SQL) : on retire SQL Server du cluster.
+  - target: { kind: StatefulSet, name: mssql }
+    patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: mssql
+  - target: { kind: Service, name: mssql }
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: mssql
+  # Le secret est fourni par Key Vault / External Secrets, pas par le dépôt.
+  - target: { kind: Secret, name: erp-ai-secrets }
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: erp-ai-secrets
+  # Volume partagé entre répliques : Azure Files (ReadWriteMany).
+  - target: { kind: PersistentVolumeClaim, name: erp-ai-data }
+    patch: |-
+      - op: add
+        path: /spec/storageClassName
+        value: azurefile-csi
+  - target: { kind: Deployment, name: erp-ai-api }
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+  # HTTPS public via ingress-nginx + cert-manager, ET authentification :
+  # chaque requête est vérifiée par oauth2-proxy (Entra ID) avant d'atteindre
+  # l'API. Pré-requis : oauth2-proxy déployé dans le namespace `auth` et
+  # enregistré comme application Entra ID (déploiement hors de ce dépôt).
+  - target: { kind: Ingress, name: erp-ai-api }
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          cert-manager.io/cluster-issuer: letsencrypt
+          nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.auth.svc.cluster.local/oauth2/auth"
+          nginx.ingress.kubernetes.io/auth-signin: "https://copilote.mon-domaine.fr/oauth2/start?rd=$escaped_request_uri"
+          nginx.ingress.kubernetes.io/auth-response-headers: "X-Auth-Request-User,X-Auth-Request-Email,X-Auth-Request-Groups"
+      - op: add
+        path: /spec/ingressClassName
+        value: nginx
+      - op: replace
+        path: /spec/rules/0/host
+        value: copilote.mon-domaine.fr
+      - op: add
+        path: /spec/tls
+        value:
+          - hosts: [copilote.mon-domaine.fr]
+            secretName: erp-ai-tls

@@ -84,6 +84,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--database", default="erp_ai")
     parser.add_argument("--schema-file", default=str(REPO_ROOT / "sql" / "00_schema.sql"))
     parser.add_argument("--roles-file", default=None)
+    parser.add_argument(
+        "--skip-schema-if-exists",
+        action="store_true",
+        help="n'applique pas le schéma (qui recrée les tables) si dbo.client existe déjà",
+    )
     parser.add_argument("--app-password", default=os.environ.get("ERP_APP_PASSWORD", ""))
     parser.add_argument("--readonly-password", default=os.environ.get("ERP_READONLY_PASSWORD", ""))
     parser.add_argument("--ingest-password", default=os.environ.get("ERP_INGEST_PASSWORD", ""))
@@ -112,8 +117,13 @@ def main(argv: list[str] | None = None) -> int:
 
     engine = sa.create_engine(args.url, isolation_level="AUTOCOMMIT")
     schema_path = Path(args.schema_file)
-    nb = apply_file(engine, schema_path)
-    print(f"==> {schema_path.name} appliqué ({nb} lot(s))")
+    with engine.connect() as conn:
+        deja = conn.execute(sa.text("SELECT OBJECT_ID('dbo.client', 'U')")).scalar() is not None
+    if args.skip_schema_if_exists and deja:
+        print(f"==> {schema_path.name} ignoré : base déjà initialisée (données conservées)")
+    else:
+        nb = apply_file(engine, schema_path)
+        print(f"==> {schema_path.name} appliqué ({nb} lot(s))")
 
     if args.roles_file:
         roles_path = Path(args.roles_file)

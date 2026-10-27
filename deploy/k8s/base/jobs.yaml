@@ -1,0 +1,90 @@
+# 1. Téléchargement des modèles dans le volume d'Ollama (une fois).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ollama-pull-models
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: pull
+          image: curlimages/curl:8.10.1
+          command: ["sh", "-c"]
+          args:
+            - >-
+              for m in gemma4:e4b bge-m3; do
+              echo "pull $m";
+              curl -fsS http://ollama:11434/api/pull -d "{\"model\":\"$m\",\"stream\":false}" || exit 1;
+              done
+---
+# 2. Base + données de démo + indexation vectorielle. Ré-exécutable :
+#    init-db crée la base si besoin et ne recharge pas les données.
+#    À relancer quand le corpus change :
+#    kubectl -n erp-ai create job reindex --from=job/erp-ai-ingest
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: erp-ai-ingest
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+      containers:
+        - name: ingest
+          image: erp-ai-copilot
+          # 1. schéma T-SQL (vues, procédure) seulement sur une base vide, puis comptes
+          #    à moindre privilège (01_roles.sql, idempotent) ; 2. données de démo ;
+          # 3. indexation. Tout avec le compte admin, réservé à ce Job.
+          command: ["sh", "-c"]
+          args:
+            - >-
+              python scripts/apply_sqlserver_schema.py --url "$DATABASE_URL_ADMIN" --database erp_ai
+              --skip-schema-if-exists --roles-file sql/01_roles.sql
+              && DATABASE_URL="$DATABASE_URL_ADMIN" erp-ai init-db
+              && DATABASE_URL="$DATABASE_URL_ADMIN" erp-ai ingest --force
+          envFrom:
+            - configMapRef: { name: erp-ai-config }
+            - secretRef: { name: erp-ai-secrets }
+          volumeMounts:
+            - { name: data, mountPath: /app/data }
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: erp-ai-data }
+---
+# 3. Banc LLMOps chaque nuit : détecte une dérive de qualité ou de latence
+#    après un changement de modèle, de prompt ou de corpus. Il travaille sur
+#    une base SQLite jetable (emptyDir), jamais sur les données de production.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: erp-ai-llmops-bench
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+          containers:
+            - name: bench
+              image: erp-ai-copilot
+              command: ["python", "scripts/llmops_bench.py", "--configs", "baseline,gemma-native"]
+              env:
+                - { name: OLLAMA_BASE_URL, value: "http://ollama:11434" }
+              volumeMounts:
+                - { name: scratch, mountPath: /app/data }
+          volumes:
+            - name: scratch
+              emptyDir: {}

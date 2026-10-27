@@ -12,13 +12,18 @@ Routes exposées :
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from erp_ai.api.mock_erp import router as mock_erp_router
+from erp_ai.config import get_settings
 from erp_ai.service import CopilotService
+
+CHAT_UI = Path(__file__).with_name("static") / "chat.html"
 
 
 class ChatRequest(BaseModel):
@@ -53,7 +58,14 @@ def create_app() -> FastAPI:
             "(relances) et restitution Power BI / Teams."
         ),
     )
-    app.include_router(mock_erp_router)
+    # L'émulateur d'API ERP n'est exposé qu'en développement et en test.
+    if get_settings().environment.lower() in {"local", "dev", "test"}:
+        app.include_router(mock_erp_router)
+
+    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    def chat_ui() -> str:
+        """Interface de démonstration (chat) : appelle /health et /chat."""
+        return CHAT_UI.read_text(encoding="utf-8")
 
     @app.get("/health", tags=["système"])
     def health(service: CopilotService = Depends(get_service)) -> dict[str, Any]:

@@ -1,0 +1,21 @@
+# Base commune : tout ce qui est identique entre le poste GPU local et le cloud.
+# Rendu : kubectl kustomize deploy/k8s/overlays/local-gpu
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: erp-ai
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: erp-ai-copilot
+resources:
+  - namespace.yaml
+  - config.yaml
+  - secret.yaml
+  - storage.yaml
+  - mssql.yaml
+  - ollama.yaml
+  - api.yaml
+  - jobs.yaml
+  - networkpolicy.yaml
+images:
+  - name: erp-ai-copilot
+    newTag: "0.2.0"

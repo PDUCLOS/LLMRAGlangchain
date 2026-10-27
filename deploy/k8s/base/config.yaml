@@ -1,0 +1,18 @@
+# Configuration non sensible : les MÊMES variables que le fichier .env.
+# Changer de modèle = changer une ligne ici, sans reconstruire l'image.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: erp-ai-config
+data:
+  ENVIRONMENT: "k8s"
+  LOG_LEVEL: "INFO"
+  LLM_PROVIDER: "ollama"
+  EMBEDDING_PROVIDER: "ollama"
+  VECTOR_STORE_PROVIDER: "local"
+  RAG_CHAIN: "langchain"
+  OLLAMA_BASE_URL: "http://ollama:11434"      # nom DNS du Service Ollama
+  OLLAMA_CHAT_MODEL: "gemma4:e4b"             # meilleur compromis du banc LLMOps
+  OLLAMA_EMBEDDING_MODEL: "bge-m3"
+  OLLAMA_NUM_CTX: "8192"
+  DATA_DIR: "/app/data"                       # volume partagé (index vectoriel)

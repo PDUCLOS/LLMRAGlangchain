@@ -20,9 +20,11 @@ from erp_ai.config import get_settings
 
 def _cmd_init_db(args: argparse.Namespace) -> int:
     from erp_ai.db.bootstrap import init_db
-    from erp_ai.db.engine import create_engine_for
+    from erp_ai.db.engine import create_engine_for, ensure_sqlserver_database
 
     settings = get_settings()
+    if settings.is_sqlserver and ensure_sqlserver_database(settings.database_url):
+        print("Base SQL Server créée.")
     engine = create_engine_for(settings)
     result = init_db(engine)
     print(json.dumps(result, ensure_ascii=False, indent=2))

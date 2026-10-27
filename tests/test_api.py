@@ -115,3 +115,10 @@ def test_mock_erp_relance(client) -> None:
     assert response.status_code == 200
     assert response.json()["statut"] == "ENVOYEE"
     assert client.get("/mock/erp/relances").json()
+
+
+def test_interface_de_chat(client) -> None:
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "/chat" in response.text

@@ -49,6 +49,30 @@ def _resolve_sqlite_url(url: str) -> str:
     return f"{prefix}{PROJECT_ROOT / raw}"
 
 
+def ensure_sqlserver_database(url: str) -> bool:
+    """Crée la base SQL Server de l'URL si elle n'existe pas (connexion via `master`).
+
+    Rend `erp-ai init-db` ré-exécutable sur un serveur neuf (conteneur,
+    StatefulSet Kubernetes) sans étape manuelle. Retourne True si créée.
+    """
+    target = sa.engine.make_url(url)
+    database = target.database
+    if not database or database.lower() == "master":
+        return False
+    admin = sa.create_engine(target.set(database="master"), isolation_level="AUTOCOMMIT")
+    try:
+        with admin.connect() as conn:
+            exists = conn.execute(
+                sa.text("SELECT CASE WHEN DB_ID(:db) IS NULL THEN 0 ELSE 1 END"), {"db": database}
+            ).scalar_one()
+            if exists:
+                return False
+            conn.exec_driver_sql(f"CREATE DATABASE [{database.replace(']', ']]')}]")
+            return True
+    finally:
+        admin.dispose()
+
+
 def create_engine_for(settings: Settings | None = None) -> Engine:
     """Crée l'`Engine` correspondant à `settings.database_url`."""
     settings = settings or get_settings()
