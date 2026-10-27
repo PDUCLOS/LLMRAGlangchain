@@ -5,6 +5,11 @@ référence d'une offre de conseil : ingestion documentaire, RAG, requêtes SQL
 en lecture seule sur le référentiel de gestion, agents d'automatisation
 (relances), restitution Power BI / Teams, gouvernance et pilotage du coût IA.
 
+> **Vitrine du projet** (démo, démarche, résultats LLMOps, guide Kubernetes) :
+> [`docs/index.html`](docs/index.html), publiable telle quelle sur GitHub Pages
+> (Settings › Pages › branche `main`, dossier `/docs`). Vidéo de présentation :
+> [`docs/video/copilote-erp-promo.mp4`](docs/video/copilote-erp-promo.mp4).
+
 > Ce dépôt est la **base technique** du projet. Le diagnostic complet
 > (architecture cible, pipeline, séquencement, budget, risques) est dans
 > [`docs/PROPOSITION.md`](docs/PROPOSITION.md) et les schémas dans
@@ -125,6 +130,27 @@ tableau de bord HTML.
 
 ---
 
+## 4 ter. Interface, conteneur et Kubernetes
+
+- **Interface de chat** : `erp-ai serve` puis http://127.0.0.1:8000 (citations
+  cliquables, SQL exécuté, tokens, latence et coût de chaque réponse). Lien de démo :
+  `/?q=Quelles factures sont en retard de plus de 60 jours ?`
+- **Image Docker** (`Dockerfile`) : une seule image pour l'API, le Job d'ingestion et
+  le banc LLMOps ; utilisateur non root, healthcheck, pilote ODBC 18 inclus.
+  `erp-ai init-db` crée la base SQL Server si elle n'existe pas.
+- **Kubernetes** (`deploy/k8s`, kustomize) : base commune + overlays `local-gpu`
+  (Docker Desktop, k3s) et `cloud` (AKS, Azure SQL, Azure Files, TLS). API répliquée
+  avec HPA, Ollama sur nœud GPU, SQL Server en StatefulSet, Job d'ingestion, CronJob
+  du banc LLMOps, NetworkPolicy. Guide pas à pas dans la vitrine.
+
+```bash
+docker build -t erp-ai-copilot:0.2.0 .
+kubectl apply -k deploy/k8s/overlays/local-gpu
+kubectl -n erp-ai port-forward svc/erp-ai-api 8000:80
+```
+
+---
+
 ## 5. Deux chaînes RAG, une seule logique
 
 | Mode | Activation | Ce que c'est |
@@ -165,7 +191,9 @@ erp-ai-copilot/
 │   ├── observability/          # journal d'usage, coût, latence
 │   └── api/                    # FastAPI + émulateur d'API ERP
 ├── tests/                      # pytest (schéma, seed, RAG, garde-fous, API)
-├── scripts/                    # bootstrap, export pour transfert
+├── scripts/                    # bootstrap, export, banc LLMOps, vidéo de présentation
+├── deploy/k8s/                 # manifestes Kubernetes (kustomize : base + overlays)
+├── Dockerfile                  # image unique : API, ingestion, banc
 └── .github/workflows/ci.yml    # CI x86-64 avec service SQL Server
 ```
 
