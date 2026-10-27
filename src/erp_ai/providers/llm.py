@@ -1,4 +1,4 @@
-"""LLM : Azure OpenAI en cible, extractif déterministe en local.
+"""LLM : Azure OpenAI en cible, Ollama sur GPU local, extractif déterministe en test.
 
 L'implémentation locale n'est pas un modèle de langage : elle compose une
 réponse à partir des passages fournis, avec les mêmes citations et le même
@@ -116,9 +116,65 @@ class AzureChatLLM:
         return response.choices[0].message.content or ""
 
 
+class OllamaChatLLM:
+    """Complétion via un serveur Ollama (modèle open-weight sur GPU local).
+
+    Après chaque appel, `last_usage` contient les compteurs réels renvoyés
+    par Ollama (tokens d'entrée / sortie, temps de chargement, de traitement
+    du prompt et de génération) : c'est la base des métriques LLMOps.
+    """
+
+    def __init__(self, settings: Settings) -> None:
+        import httpx
+
+        self.name = "ollama"
+        self.model = settings.ollama_chat_model
+        self._num_ctx = settings.ollama_num_ctx
+        self._client = httpx.Client(
+            base_url=settings.ollama_base_url, timeout=settings.ollama_timeout_s
+        )
+        self.last_usage: dict[str, float] | None = None
+
+    def complete(self, system: str, user: str, *, temperature: float = 0.0) -> str:
+        response = self._client.post(
+            "/api/chat",
+            json={
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+                "stream": False,
+                "think": False,
+                "options": {"temperature": temperature, "num_ctx": self._num_ctx, "seed": 42},
+            },
+        )
+        response.raise_for_status()
+        data = response.json()
+        self.last_usage = ollama_usage(data)
+        return (data.get("message") or {}).get("content", "").strip()
+
+
+def ollama_usage(data: dict) -> dict[str, float]:
+    """Extrait les compteurs d'une réponse Ollama (durées en ns -> ms)."""
+    eval_count = int(data.get("eval_count") or 0)
+    eval_ms = (data.get("eval_duration") or 0) / 1e6
+    return {
+        "tokens_in": int(data.get("prompt_eval_count") or 0),
+        "tokens_out": eval_count,
+        "load_ms": round((data.get("load_duration") or 0) / 1e6, 1),
+        "prompt_ms": round((data.get("prompt_eval_duration") or 0) / 1e6, 1),
+        "eval_ms": round(eval_ms, 1),
+        "tokens_per_s": round(eval_count / (eval_ms / 1000), 1) if eval_ms else 0.0,
+    }
+
+
 def build_llm(settings: Settings | None = None) -> ChatLLM:
     """Construit le LLM selon la configuration."""
     settings = settings or get_settings()
-    if settings.llm_provider.lower() == "azure":
+    provider = settings.llm_provider.lower()
+    if provider == "azure":
         return AzureChatLLM(settings)
+    if provider == "ollama":
+        return OllamaChatLLM(settings)
     return ExtractiveLocalLLM()

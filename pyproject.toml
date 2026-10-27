@@ -29,6 +29,11 @@ sqlserver = ["pyodbc>=5.1"]
 langchain = [
   "langchain-core>=0.3",
 ]
+# LLM open-weight local via Ollama (GPU) — variante LangChain incluse
+ollama = [
+  "langchain-core>=0.3",
+  "langchain-ollama>=0.3",
+]
 # Azure : OpenAI, AI Search, identité managée, modèle LangChain Azure
 azure = [
   "openai>=1.40",

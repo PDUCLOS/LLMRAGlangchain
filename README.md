@@ -96,6 +96,35 @@ proposition, en Bicep (`infra/`).
 
 ---
 
+## 4 bis. Mode GPU local (Ollama) et banc LLMOps
+
+Entre le mode `local` (déterministe, pour la CI) et Azure, le provider
+`ollama` sert un **vrai LLM open-weight sur le GPU** de la machine, avec des
+embeddings neuronaux multilingues. Aucune donnée ne sort du poste.
+
+```bash
+ollama pull qwen3.5:9b && ollama pull bge-m3
+pip install -e ".[dev,ollama]"
+
+export LLM_PROVIDER=ollama EMBEDDING_PROVIDER=ollama
+export DATA_DIR=./data/ollama DATABASE_URL=sqlite:///./data/ollama/dev.db
+make init-db && make ingest
+make ask Q="Quel est le barème des remises selon le chiffre d'affaires ?"
+RAG_CHAIN=langchain make ask Q="..."   # même chose via ChatOllama (LCEL)
+```
+
+Chaque appel journalise les **compteurs réels** renvoyés par Ollama (tokens
+d'entrée et de sortie, débit en tokens/s) au lieu d'une estimation.
+
+`make bench` compare quatre configurations (extractif d'origine, qwen3.5 en
+chaîne native, qwen3.5 via LangChain, gemma4) sur le gold set et trois
+questions adverses (hors corpus, injection de prompt). Il mesure hit@k, MRR,
+couverture, citations valides, refus, fidélité notée par deux LLM juges,
+latence p50/p95, débit et coût équivalent Azure. `make report` produit le
+tableau de bord HTML.
+
+---
+
 ## 5. Deux chaînes RAG, une seule logique
 
 | Mode | Activation | Ce que c'est |

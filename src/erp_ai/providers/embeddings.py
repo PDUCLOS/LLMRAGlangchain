@@ -88,9 +88,37 @@ class AzureOpenAIEmbeddings:
         return self.embed_documents([text])[0]
 
 
+class OllamaEmbeddings:
+    """Embeddings neuronaux servis par Ollama (bge-m3 par défaut, multilingue)."""
+
+    def __init__(self, settings: Settings) -> None:
+        import httpx
+
+        self.name = "ollama"
+        self.model = settings.ollama_embedding_model
+        self._client = httpx.Client(
+            base_url=settings.ollama_base_url, timeout=settings.ollama_timeout_s
+        )
+        self.dim = 0  # connu après le premier appel
+
+    def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
+        response = self._client.post("/api/embed", json={"model": self.model, "input": list(texts)})
+        response.raise_for_status()
+        vectors = response.json()["embeddings"]
+        if vectors:
+            self.dim = len(vectors[0])
+        return vectors
+
+    def embed_query(self, text: str) -> list[float]:
+        return self.embed_documents([text])[0]
+
+
 def build_embedding_provider(settings: Settings | None = None) -> EmbeddingProvider:
     """Construit le fournisseur d'embeddings selon la configuration."""
     settings = settings or get_settings()
-    if settings.embedding_provider.lower() == "azure":
+    provider = settings.embedding_provider.lower()
+    if provider == "azure":
         return AzureOpenAIEmbeddings(settings)
+    if provider == "ollama":
+        return OllamaEmbeddings(settings)
     return HashingEmbeddings(dim=settings.embedding_dim)

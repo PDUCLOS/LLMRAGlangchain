@@ -12,7 +12,7 @@ PIP   := .venv/bin/pip
 
 .DEFAULT_GOAL := help
 .PHONY: help venv install init-db seed ingest serve test lint fmt typecheck \
-        docker-up docker-down docker-logs eval export clean ci
+        docker-up docker-down docker-logs eval bench report export clean ci
 
 help: ## Afficher l'aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -56,6 +56,12 @@ typecheck: ## Contrôle de types (mypy)
 
 eval: ## Évaluer le RAG sur le gold set
 	$(PY) -m erp_ai.cli eval
+
+bench: ## Banc LLMOps (baseline vs Ollama, natif vs LangChain) -> data/llmops/report.json
+	$(PY) scripts/llmops_bench.py
+
+report: ## Tableau de bord HTML du banc LLMOps
+	$(PY) scripts/llmops_report.py
 
 docker-up: ## Démarrer l'infra locale (SQL Server requis : --profile sqlserver)
 	docker compose up -d

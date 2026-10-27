@@ -51,6 +51,7 @@ class CopilotService:
         self.tools = ErpTools(self.engine, self.settings)
         self.sql_agent = SqlAgent(self.engine, self.llm, self.settings)
         self._lc_chain: Any | None = None
+        self._lc_usage: dict[str, Any] = {}
 
     # -- Santé -----------------------------------------------------------
     def health(self) -> dict[str, Any]:
@@ -104,6 +105,8 @@ class CopilotService:
 
         started = time.perf_counter()
         request_id = new_request_id()
+        chain_used = "none"
+        generation_ms = 0
         top_k = top_k or self.settings.top_k
 
         retrieved = self.retriever.search(question, client_id=client_id, top_k=top_k)
@@ -153,16 +156,28 @@ class CopilotService:
         else:
             for index, source in enumerate(sources, start=1):
                 source["source_ref"] = source.get("source_ref") or f"S{index}"
+            if hasattr(self.llm, "last_usage"):
+                self.llm.last_usage = None
+            gen_started = time.perf_counter()
             answer = self._answer_with_langchain(question, sources)
+            chain_used = "langchain" if answer is not None else "native"
             if answer is None:
                 prompt = build_user_prompt(sources, question)
                 answer = self.llm.complete(SYSTEM_PROMPT, prompt)
+            generation_ms = int((time.perf_counter() - gen_started) * 1000)
             statut = "OK"
 
-        tokens_in = estimate_tokens(SYSTEM_PROMPT) + estimate_tokens(
-            build_user_prompt(sources, question)
+        # Compteurs réels du modèle si disponibles (Ollama, LangChain), sinon estimation.
+        measured = (
+            dict(self._lc_usage)
+            if chain_used == "langchain" and self._lc_usage
+            else dict(getattr(self.llm, "last_usage", None) or {})
         )
-        tokens_out = estimate_tokens(answer)
+        tokens_mesures = bool(measured.get("tokens_in"))
+        tokens_in = int(measured.get("tokens_in") or 0) or (
+            estimate_tokens(SYSTEM_PROMPT) + estimate_tokens(build_user_prompt(sources, question))
+        )
+        tokens_out = int(measured.get("tokens_out") or 0) or estimate_tokens(answer)
         cout = estimate_cost(self.settings, self.llm.model, tokens_in, tokens_out)
         latence_ms = int((time.perf_counter() - started) * 1000)
 
@@ -223,6 +238,11 @@ class CopilotService:
                 "tokens_out": tokens_out,
                 "cout_eur": cout,
                 "latence_ms": latence_ms,
+                "generation_ms": generation_ms,
+                "retrieval_ms": max(latence_ms - generation_ms, 0),
+                "tokens_mesures": tokens_mesures,
+                "tokens_per_s": measured.get("tokens_per_s"),
+                "chain": chain_used,
             },
             "statut": statut,
         }
@@ -239,12 +259,17 @@ class CopilotService:
         try:
             if self._lc_chain is None:
                 chat_model = None
-                if self.settings.llm_provider.lower() == "azure":
+                provider = self.settings.llm_provider.lower()
+                if provider == "azure":
                     from erp_ai.rag.langchain_chain import build_azure_chat_model
 
                     chat_model = build_azure_chat_model(self.settings)
+                elif provider == "ollama":
+                    from erp_ai.rag.langchain_chain import build_ollama_chat_model
+
+                    chat_model = build_ollama_chat_model(self.settings)
                 self._lc_chain = build_answer_chain(
-                    self.settings, llm=self.llm, chat_model=chat_model
+                    self.settings, llm=self.llm, chat_model=chat_model, usage_sink=self._lc_usage
                 )
             context = format_source_blocks(sources)
             return self._lc_chain.invoke({"context": context, "question": question})

@@ -35,8 +35,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./data/dev.db"
 
     # --- Providers (bascule local <-> Azure) ------------------------------
-    llm_provider: str = "local"  # local | azure
-    embedding_provider: str = "local"  # local | azure
+    llm_provider: str = "local"  # local | ollama | azure
+    embedding_provider: str = "local"  # local | ollama | azure
     vector_store_provider: str = "local"  # local | azure_ai_search
     # Chaîne de génération : native (écrite explicitement) ou langchain (LCEL)
     rag_chain: str = "native"  # native | langchain
@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     azure_openai_chat_deployment: str = "gpt-4.1-mini"
     azure_openai_embedding_deployment: str = "text-embedding-3-small"
     azure_openai_api_version: str = "2024-10-21"
+
+    # --- Ollama (LLM et embeddings locaux sur GPU) ---------------------
+    ollama_base_url: str = "http://127.0.0.1:11434"
+    ollama_chat_model: str = "qwen3.5:9b"
+    ollama_embedding_model: str = "bge-m3"
+    ollama_num_ctx: int = 8192
+    ollama_timeout_s: float = 180.0
 
     # --- Azure AI Search --------------------------------------------------
     azure_search_endpoint: str = ""

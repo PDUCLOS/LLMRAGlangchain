@@ -1,0 +1,242 @@
+<title>ERP Copilot LLMOps</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : rapport d'exploitation — bandeau machine, tableau comparatif, graphes, détail par question */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #17202e;
+  --muted: #5b6577;
+  --line: #dde1e8;
+  --accent: #2f55c9;
+  --accent-soft: #e5ebfb;
+  --good: #1f7a4d;
+  --good-soft: #e1f2e8;
+  --warn: #9a6200;
+  --warn-soft: #fbefd9;
+  --bad: #b3261e;
+  --bad-soft: #fbe3e1;
+  --s1: #8a93a6; --s2: #2f55c9; --s3: #6b8ae6; --s4: #c46b1f;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #10141b; --surface: #171c25; --ink: #e6e9ef; --muted: #98a1b3; --line: #2a3140;
+  --accent: #7e9cf2; --accent-soft: #1e2a4a; --good: #5cc78f; --good-soft: #15301f;
+  --warn: #e3a948; --warn-soft: #33270f; --bad: #f08079; --bad-soft: #3a1a18;
+  --s1: #7c869a; --s2: #7e9cf2; --s3: #b1c2f7; --s4: #e39a55; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #10141b; --surface: #171c25; --ink: #e6e9ef; --muted: #98a1b3; --line: #2a3140;
+  --accent: #7e9cf2; --accent-soft: #1e2a4a; --good: #5cc78f; --good-soft: #15301f;
+  --warn: #e3a948; --warn-soft: #33270f; --bad: #f08079; --bad-soft: #3a1a18;
+  --s1: #7c869a; --s2: #7e9cf2; --s3: #b1c2f7; --s4: #e39a55; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 40px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; text-wrap: balance; margin: 0; letter-spacing: -0.005em; }
+h1 { font-size: 2.1rem; line-height: 1.15; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.mono, td.num, .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+header { display: grid; gap: 14px; }
+.specs { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--f-mono); font-size: 0.78rem; padding: 4px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+section { display: grid; gap: 16px; min-width: 0; }
+.verdicts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.verdict { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.verdict b { font-family: var(--f-display); font-size: 1.05rem; font-weight: 600; }
+.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
+th { font-weight: 500; color: var(--muted); font-size: 0.78rem; }
+thead th { position: sticky; top: 0; background: var(--surface); }
+td.num, th.num { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+td.best { color: var(--good); font-weight: 600; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: baseline; }
+.pill { font-family: var(--f-mono); font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; display: inline-block; }
+.pill.ok { background: var(--good-soft); color: var(--good); }
+.pill.ko { background: var(--bad-soft); color: var(--bad); }
+.pill.mid { background: var(--warn-soft); color: var(--warn); }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.chart { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart svg text { fill: var(--muted); font-family: var(--f-mono); font-size: 11px; }
+.chart svg .lbl { fill: var(--ink); }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs button { font: 500 0.85rem var(--f-body); padding: 6px 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 4px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.tabs button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.qlist { display: grid; gap: 8px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+summary { cursor: pointer; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary .q { flex: 1 1 320px; min-width: 0; font-weight: 500; }
+summary .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.answer { padding: 0 14px 14px; display: grid; gap: 10px; min-width: 0; }
+.answer pre { white-space: pre-wrap; word-break: break-word; font-family: var(--f-body); font-size: 0.88rem; margin: 0; padding: 12px; background: var(--bg); border-radius: 4px; }
+.answer .judge { font-size: 0.85rem; color: var(--muted); }
+.notes { display: grid; gap: 10px; }
+.notes li { max-width: 80ch; }
+.notes ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+code { font-family: var(--f-mono); font-size: 0.85em; background: var(--accent-soft); padding: 1px 5px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">LLMRAGlangchain · banc LLMOps</span>
+    <h1>Copilote ERP sur GPU local : qualité, latence et coût</h1>
+    <p class="muted" id="intro"></p>
+    <div class="specs" id="specs"></div>
+  </header>
+
+  <section>
+    <h2>Ce qu'il faut retenir</h2>
+    <div class="verdicts" id="verdicts"></div>
+  </section>
+
+  <section>
+    <h2>Comparatif des configurations</h2>
+    <p class="muted">Métriques de qualité sur le gold set de 10 questions métier. Refus et injection sont mesurés sur 3 questions adverses. En vert : meilleure valeur de la colonne.</p>
+    <div class="scroll"><table id="cmp"></table></div>
+  </section>
+
+  <section>
+    <h2>Graphiques</h2>
+    <div class="charts" id="charts"></div>
+  </section>
+
+  <section>
+    <h2>Détail des réponses</h2>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="qlist" id="qlist"></div>
+  </section>
+
+  <section>
+    <h2>Tests et environnement</h2>
+    <div class="notes" id="notes"></div>
+  </section>
+</div>
+
+<script>
+const R = /*__DATA__*/null;
+const C = R.context || {};
+const COLORS = ["var(--s1)", "var(--s2)", "var(--s3)", "var(--s4)"];
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct = v => v == null ? "—" : Math.round(v * 100) + " %";
+const ms = v => v == null ? "—" : (v >= 1000 ? (v / 1000).toFixed(1) + " s" : Math.round(v) + " ms");
+const cfgs = R.configs;
+
+document.getElementById("intro").textContent =
+  `Banc exécuté le ${R.generated_at.replace("T", " à ")}, en ${Math.round(R.duration_s / 60)} min, sur ${R.questions_gold} questions du gold set et ${R.questions_adversarial} questions adverses, pour ${cfgs.length} configurations. Chaque réponse est notée par deux LLM juges (gemma4:e4b et qwen3.5:9b).`;
+document.getElementById("specs").innerHTML = (C.machine || []).map(s => `<span class="chip">${esc(s)}</span>`).join("");
+document.getElementById("verdicts").innerHTML = (C.verdicts || []).map(v =>
+  `<div class="verdict"><span class="eyebrow">${esc(v.tag)}</span><b>${esc(v.title)}</b><p class="muted">${esc(v.text)}</p></div>`).join("");
+
+// Tableau comparatif
+const cols = [
+  ["Recherche hit@5", m => m.hit_at_k, pct, "max"],
+  ["MRR", m => m.mrr, v => v?.toFixed(2), "max"],
+  ["Mots-clés", m => m.keyword_coverage, pct, "max"],
+  ["Cite ses sources", m => m.citation_rate, pct, "max"],
+  ["Citations valides", m => m.citations_valid, pct, "max"],
+  ["Refus hors corpus", m => m.refusal_ok, pct, "max"],
+  ["Fidélité (juge, /5)", m => m.faithfulness_avg, v => v == null ? "—" : v.toFixed(2), "max"],
+  ["Latence p50", m => m.latency_p50_ms, ms, "min"],
+  ["Latence p95", m => m.latency_p95_ms, ms, "min"],
+  ["Débit tokens/s", m => m.tokens_per_s_avg, v => v == null ? "—" : v.toFixed(0), "max"],
+  ["Tokens in/out", m => null, null, null],
+  ["Coût éq. Azure / 1 000 req.", m => m.cost_azure_eq_eur_per_1k_req, v => v.toFixed(2) + " €", null],
+];
+let html = "<thead><tr><th>Configuration</th>" + cols.map(c => `<th class="num">${c[0]}</th>`).join("") + "</tr></thead><tbody>";
+const best = cols.map(([, f, , dir]) => {
+  if (!dir) return null;
+  const vals = cfgs.map(c => f(c.metrics)).filter(v => v != null);
+  return dir === "max" ? Math.max(...vals) : Math.min(...vals);
+});
+cfgs.forEach((c, i) => {
+  const m = c.metrics;
+  html += `<tr><td><span class="sw" style="background:${COLORS[i]}"></span>${esc(c.label)}</td>`;
+  cols.forEach(([name, f, fmt], j) => {
+    if (name === "Tokens in/out") {
+      html += `<td class="num">${m.tokens_in_total.toLocaleString("fr-FR")} / ${m.tokens_out_total.toLocaleString("fr-FR")}${m.tokens_measured ? "" : " <span class='muted'>(est.)</span>"}</td>`;
+      return;
+    }
+    const v = f(m);
+    html += `<td class="num${best[j] != null && v === best[j] ? " best" : ""}">${fmt(v)}</td>`;
+  });
+  html += "</tr>";
+});
+document.getElementById("cmp").innerHTML = html + "</tbody>";
+
+// Graphiques en barres horizontales (une même échelle par graphe)
+function bars(title, sub, key, fmt, max) {
+  const vals = cfgs.map(c => key(c.metrics) ?? 0);
+  const top = max ?? (Math.max(...vals) * 1.15 || 1);
+  const W = 460, rowH = 34, left = 150, right = 70, H = cfgs.length * rowH + 28;
+  const x = v => left + (W - left - right) * (v / top);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}">`;
+  [0, 0.5, 1].forEach(t => {
+    const gx = x(top * t);
+    svg += `<line x1="${gx}" x2="${gx}" y1="4" y2="${H - 22}" stroke="var(--line)" stroke-width="1"/>`;
+    svg += `<text x="${gx}" y="${H - 6}" text-anchor="middle">${fmt(top * t)}</text>`;
+  });
+  cfgs.forEach((c, i) => {
+    const y = 8 + i * rowH;
+    svg += `<text class="lbl" x="${left - 10}" y="${y + 15}" text-anchor="end">${esc(c.name)}</text>`;
+    svg += `<rect x="${left}" y="${y + 3}" width="${Math.max(x(vals[i]) - left, 1.5)}" height="18" rx="2" fill="${COLORS[i]}"/>`;
+    svg += `<text class="lbl" x="${x(vals[i]) + 6}" y="${y + 16}">${fmt(vals[i])}</text>`;
+  });
+  return `<div class="chart"><h3>${esc(title)}</h3><p class="muted">${esc(sub)}</p>${svg}</svg></div>`;
+}
+document.getElementById("charts").innerHTML = [
+  bars("Fidélité aux sources", "Note moyenne du LLM juge, sur 5. Plus haut = mieux.", m => m.faithfulness_avg, v => v.toFixed(1), 5),
+  bars("Latence médiane (p50)", "Temps de bout en bout, recherche + génération. Plus bas = mieux.", m => m.latency_p50_ms, ms),
+  bars("Latence p95", "Le cas lent qu'un utilisateur rencontre 1 fois sur 20.", m => m.latency_p95_ms, ms),
+  bars("Refus correct hors corpus", "Questions sans réponse dans les documents. Plus haut = mieux.", m => m.refusal_ok, v => Math.round(v * 100) + " %", 1),
+].join("");
+
+// Détail par question
+const tabs = document.getElementById("tabs"), qlist = document.getElementById("qlist");
+function show(i) {
+  [...tabs.children].forEach((b, j) => b.setAttribute("aria-selected", String(i === j)));
+  qlist.innerHTML = cfgs[i].rows.map(r => {
+    const tags = [];
+    if (r.type === "gold") {
+      tags.push(r.rank ? `<span class="pill ok">doc rang ${r.rank}</span>` : `<span class="pill ko">doc absent</span>`);
+      tags.push(r.keywords_ok ? `<span class="pill ok">mots-clés</span>` : `<span class="pill ko">mots-clés</span>`);
+      tags.push(r.cites ? `<span class="pill ok">cite</span>` : `<span class="pill mid">sans citation</span>`);
+    } else {
+      tags.push(`<span class="pill mid">${r.type === "injection" ? "injection" : "hors corpus"}</span>`);
+      tags.push(r.refused ? `<span class="pill ok">refuse</span>` : `<span class="pill ko">répond quand même</span>`);
+      if (r.type === "injection") tags.push(r.leaked ? `<span class="pill ko">fuite du prompt</span>` : `<span class="pill ok">pas de fuite</span>`);
+    }
+    if (r.judge?.score) tags.push(`<span class="pill ${r.judge.score >= 4 ? "ok" : r.judge.score >= 3 ? "mid" : "ko"}">juge ${r.judge.score}/5</span>`);
+    tags.push(`<span class="mono muted">${ms(r.latency_ms)}</span>`);
+    return `<details><summary><span class="q">${esc(r.question)}</span><span class="meta">${tags.join("")}</span></summary>
+      <div class="answer"><pre>${esc(r.answer)}</pre>
+      ${r.judge?.justification ? `<p class="judge">Juge : ${esc(r.judge.justification)}</p>` : ""}
+      <p class="judge mono">${r.tokens_in} tokens in · ${r.tokens_out} out${r.tokens_per_s ? ` · ${r.tokens_per_s} tok/s` : ""} · chaîne ${esc(r.chain)}</p></div></details>`;
+  }).join("");
+}
+cfgs.forEach((c, i) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.role = "tab"; b.id = "tab-" + c.name; b.textContent = c.name;
+  b.addEventListener("click", () => show(i));
+  tabs.appendChild(b);
+});
+show(Math.min(1, cfgs.length - 1));
+
+document.getElementById("notes").innerHTML = (C.notes || []).length
+  ? "<ul>" + C.notes.map(n => `<li>${n}</li>`).join("") + "</ul>" : "";
+</script>

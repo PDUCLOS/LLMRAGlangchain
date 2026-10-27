@@ -90,6 +90,20 @@ def build_azure_chat_model(settings: Settings) -> Any:
     )
 
 
+def build_ollama_chat_model(settings: Settings) -> Any:
+    """Construit un `ChatOllama` (langchain-ollama) : modèle open-weight sur GPU local."""
+    from langchain_ollama import ChatOllama
+
+    return ChatOllama(
+        model=settings.ollama_chat_model,
+        base_url=settings.ollama_base_url,
+        temperature=0.0,
+        num_ctx=settings.ollama_num_ctx,
+        seed=42,
+        reasoning=False,
+    )
+
+
 def build_rag_chain(
     settings: Settings,
     retriever: Any,
@@ -118,8 +132,12 @@ def build_answer_chain(
     settings: Settings,
     llm: ChatLLM | None = None,
     chat_model: Any | None = None,
+    usage_sink: dict | None = None,
 ) -> Any:
     """Chaîne LangChain à partir d'un contexte déjà récupéré.
+
+    Si `usage_sink` est fourni, les compteurs de tokens renvoyés par le
+    modèle (`usage_metadata`) y sont recopiés à chaque appel.
 
     `prompt -> modèle -> texte` : le service lui passe les sources qu'il a
     déjà sélectionnées, ce qui évite une seconde récupération et garantit
@@ -149,6 +167,12 @@ def build_answer_chain(
         model_step = RunnableLambda(_call_native)
 
     def _extract_text(output: Any) -> str:
+        if usage_sink is not None:
+            usage_sink.clear()
+            metadata = getattr(output, "usage_metadata", None) or {}
+            if metadata:
+                usage_sink["tokens_in"] = int(metadata.get("input_tokens") or 0)
+                usage_sink["tokens_out"] = int(metadata.get("output_tokens") or 0)
         if hasattr(output, "content"):
             return str(output.content)
         return str(output)
