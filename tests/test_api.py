@@ -14,12 +14,12 @@ def client(service):
         yield test_client
 
 
-def test_health(client) -> None:
+def test_health(client, engine) -> None:
     response = client.get("/health")
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "ok"
-    assert payload["database"]["dialect"] == "sqlite"
+    assert payload["database"]["dialect"] == engine.dialect.name
     assert payload["providers"]["llm"] == "local-extractive"
 
 

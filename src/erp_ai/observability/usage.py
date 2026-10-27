@@ -72,9 +72,14 @@ def log_usage(
 def usage_summary(engine: Engine, days: int = 30) -> list[dict[str, Any]]:
     """Agrégat de consommation par jour, modèle et client."""
     since = datetime.now() - timedelta(days=days)
+    # `date()` n'existe pas en T-SQL ; `CAST(... AS DATE)` donne un entier sous SQLite.
+    horodatage = models.ai_usage_log.c.horodatage
+    jour = (
+        sa.cast(horodatage, sa.Date) if engine.dialect.name == "mssql" else sa.func.date(horodatage)
+    )
     stmt = (
         sa.select(
-            sa.func.date(models.ai_usage_log.c.horodatage).label("jour"),
+            jour.label("jour"),
             models.ai_usage_log.c.modele,
             models.ai_usage_log.c.provider,
             sa.func.count().label("nb_appels"),
@@ -84,12 +89,8 @@ def usage_summary(engine: Engine, days: int = 30) -> list[dict[str, Any]]:
             sa.func.avg(models.ai_usage_log.c.latence_ms).label("latence_moy"),
         )
         .where(models.ai_usage_log.c.horodatage >= since)
-        .group_by(
-            sa.func.date(models.ai_usage_log.c.horodatage),
-            models.ai_usage_log.c.modele,
-            models.ai_usage_log.c.provider,
-        )
-        .order_by(sa.func.date(models.ai_usage_log.c.horodatage).desc())
+        .group_by(jour, models.ai_usage_log.c.modele, models.ai_usage_log.c.provider)
+        .order_by(jour.desc())
     )
     with engine.connect() as conn:
         rows = conn.execute(stmt).mappings().all()

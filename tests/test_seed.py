@@ -79,7 +79,7 @@ def test_reglement_coherent_avec_le_statut(engine) -> None:
                         models.reglement, models.reglement.c.facture_id == models.facture.c.id
                     )
                 )
-                .group_by(models.facture.c.id)
+                .group_by(models.facture.c.id, models.facture.c.statut)
             )
             .mappings()
             .all()

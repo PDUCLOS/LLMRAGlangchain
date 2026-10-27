@@ -19,6 +19,20 @@ IF OBJECT_ID('dbo.vw_ca_client', 'V') IS NOT NULL DROP VIEW dbo.vw_ca_client;
 IF OBJECT_ID('dbo.vw_impayes', 'V') IS NOT NULL DROP VIEW dbo.vw_impayes;
 IF OBJECT_ID('dbo.usp_get_impayes', 'P') IS NOT NULL DROP PROCEDURE dbo.usp_get_impayes;
 
+-- Tables : ordre inverse des dépendances (enfants avant parents) pour que le
+-- script soit ré-exécutable sur une base déjà peuplée.
+IF OBJECT_ID('dbo.conversation', 'U') IS NOT NULL DROP TABLE dbo.conversation;
+IF OBJECT_ID('dbo.ai_usage_log', 'U') IS NOT NULL DROP TABLE dbo.ai_usage_log;
+IF OBJECT_ID('dbo.ingestion_log', 'U') IS NOT NULL DROP TABLE dbo.ingestion_log;
+IF OBJECT_ID('dbo.chunk', 'U') IS NOT NULL DROP TABLE dbo.chunk;
+IF OBJECT_ID('dbo.document', 'U') IS NOT NULL DROP TABLE dbo.document;
+IF OBJECT_ID('dbo.ecriture_comptable', 'U') IS NOT NULL DROP TABLE dbo.ecriture_comptable;
+IF OBJECT_ID('dbo.reglement', 'U') IS NOT NULL DROP TABLE dbo.reglement;
+IF OBJECT_ID('dbo.ligne_facture', 'U') IS NOT NULL DROP TABLE dbo.ligne_facture;
+IF OBJECT_ID('dbo.facture', 'U') IS NOT NULL DROP TABLE dbo.facture;
+IF OBJECT_ID('dbo.article', 'U') IS NOT NULL DROP TABLE dbo.article;
+IF OBJECT_ID('dbo.client', 'U') IS NOT NULL DROP TABLE dbo.client;
+
 -- ---------------------------------------------------------------------------
 -- ERP — référentiel de gestion
 -- ---------------------------------------------------------------------------
@@ -207,6 +221,7 @@ CREATE INDEX IX_conversation_req    ON dbo.conversation (request_id);
 -- ---------------------------------------------------------------------------
 -- Vues métier
 -- ---------------------------------------------------------------------------
+GO
 CREATE VIEW dbo.vw_impayes AS
 SELECT  f.numero,
         f.montant_ttc,
@@ -223,6 +238,7 @@ FROM    dbo.facture f
 JOIN    dbo.client c ON c.id = f.client_id
 WHERE   f.statut <> 'PAYE';
 
+GO
 CREATE VIEW dbo.vw_tranche_anciennete AS
 SELECT  c.raison_sociale,
         CASE WHEN DATEDIFF(DAY, f.date_echeance, GETDATE()) <= 30 THEN '0-30'
@@ -240,6 +256,7 @@ GROUP BY c.raison_sociale,
               WHEN DATEDIFF(DAY, f.date_echeance, GETDATE()) <= 90 THEN '61-90'
               ELSE '90+' END;
 
+GO
 CREATE VIEW dbo.vw_ca_client AS
 SELECT  c.id          AS client_id,
         c.code        AS client_code,
@@ -255,6 +272,7 @@ GROUP BY c.id, c.code, c.raison_sociale, YEAR(f.date_emission);
 -- ---------------------------------------------------------------------------
 -- Procédure stockée : Impayés d'un client au-delà d'un seuil de retard
 -- ---------------------------------------------------------------------------
+GO
 CREATE PROCEDURE dbo.usp_get_impayes
     @ClientId  INT = NULL,
     @MinJours  INT = 0
@@ -274,3 +292,4 @@ BEGIN
       AND   v.jours_retard >= @MinJours
     ORDER BY v.jours_retard DESC;
 END;
+GO
